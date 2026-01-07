@@ -52,12 +52,11 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // USAMOS LA RUTA DIRECTA DE LA FUNCIÓN DE NETLIFY
-    // Esto evita problemas si el archivo netlify.toml no redirige bien /api/
-    const endpoint = '/.netlify/functions/create-order';
+    // USAMOS LA RUTA DIRECTA Y CON NOMBRE NEUTRO PARA EVITAR AD-BLOCKERS
+    const endpoint = '/.netlify/functions/process-checkout';
 
     try {
-        console.log("Iniciando pago seguro via Function...");
+        console.log("Iniciando checkout seguro...");
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -75,7 +74,8 @@ export const sendOrderToWP = async (orderData) => {
             data = JSON.parse(textResponse);
         } catch (e) {
             console.error("Respuesta no es JSON:", textResponse.substring(0, 100));
-            throw new Error(`Error del servidor (HTML): ${response.status}`);
+            // Si devuelve HTML (ej: la página 404 de Netlify), lanzamos error claro
+            throw new Error(`Error de conexión con el servidor de pago (${response.status})`);
         }
 
         if (!response.ok) {
