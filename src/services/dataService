@@ -52,11 +52,11 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // USAMOS LA RUTA DIRECTA Y CON NOMBRE NEUTRO PARA EVITAR AD-BLOCKERS
+    // RUTA DE LA FUNCIÓN EN NETLIFY
     const endpoint = '/.netlify/functions/process-checkout';
 
     try {
-        console.log("Iniciando checkout seguro...");
+        console.log("Iniciando checkout seguro en:", endpoint);
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -66,27 +66,31 @@ export const sendOrderToWP = async (orderData) => {
             body: JSON.stringify(orderData)
         });
 
-        // Intentamos leer el texto primero para ver si es HTML (error) o JSON
+        // 1. Manejo Específico de Error 404 (Función no encontrada)
+        if (response.status === 404) {
+            console.error("❌ ERROR CRÍTICO: La función 'process-checkout' no existe en Netlify.");
+            throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
+        }
+
+        // 2. Intentamos leer JSON
         const textResponse = await response.text();
-        
         let data;
         try {
             data = JSON.parse(textResponse);
         } catch (e) {
             console.error("Respuesta no es JSON:", textResponse.substring(0, 100));
-            // Si devuelve HTML (ej: la página 404 de Netlify), lanzamos error claro
-            throw new Error(`Error de conexión con el servidor de pago (${response.status})`);
+            // Si devuelve HTML 500 u otro error
+            throw new Error(`Error técnico del servidor (${response.status})`);
         }
 
+        // 3. Manejo de Errores Lógicos (WooCommerce rechazó la orden)
         if (!response.ok) {
-            console.error("Error del servidor (Logic):", data);
-            throw new Error(data.message || 'Error al procesar el pago');
+            console.error("Rechazado por WooCommerce:", data);
+            throw new Error(data.message || 'No se pudo procesar el pago');
         }
 
-        // Recuperar URL de pago
+        // 4. Éxito: Redirección
         let paymentUrl = data.payment_url;
-        
-        // Fallback: construir URL estándar
         if (!paymentUrl && data.id && data.order_key) {
              const baseUrl = "https://novimundo.com.mx"; 
              paymentUrl = `${baseUrl}/checkout/order-pay/${data.id}/?pay_for_order=true&key=${data.order_key}`;
@@ -95,7 +99,7 @@ export const sendOrderToWP = async (orderData) => {
         return { ...data, payment_url: paymentUrl };
 
     } catch (error) {
-        console.error("Error de conexión:", error);
+        console.error("Error capturado en sendOrderToWP:", error);
         throw error;
     }
 };
