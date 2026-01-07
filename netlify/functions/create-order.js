@@ -1,6 +1,5 @@
-const fetch = require('node-fetch');
-
 exports.handler = async (event, context) => {
+  // Solo permitimos POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -22,6 +21,7 @@ exports.handler = async (event, context) => {
     // Usamos las claves para autenticarnos con WordPress
     const auth = Buffer.from(`${wcCk}:${wcCs}`).toString('base64');
 
+    // Usamos fetch nativo (disponible en Node 18+)
     const response = await fetch(`${wcUrl}/wp-json/wc/v3/orders`, {
       method: 'POST',
       headers: {
