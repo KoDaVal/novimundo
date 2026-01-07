@@ -52,11 +52,12 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // URL Relativa: Al empezar con /api, el netlify.toml lo redirige a la función
-    const endpoint = '/api/create-order';
+    // USAMOS LA RUTA DIRECTA DE LA FUNCIÓN DE NETLIFY
+    // Esto evita problemas si el archivo netlify.toml no redirige bien /api/
+    const endpoint = '/.netlify/functions/create-order';
 
     try {
-        console.log("Iniciando pago seguro...");
+        console.log("Iniciando pago seguro via Function...");
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -66,20 +67,28 @@ export const sendOrderToWP = async (orderData) => {
             body: JSON.stringify(orderData)
         });
 
-        const data = await response.json();
+        // Intentamos leer el texto primero para ver si es HTML (error) o JSON
+        const textResponse = await response.text();
+        
+        let data;
+        try {
+            data = JSON.parse(textResponse);
+        } catch (e) {
+            console.error("Respuesta no es JSON:", textResponse.substring(0, 100));
+            throw new Error(`Error del servidor (HTML): ${response.status}`);
+        }
 
         if (!response.ok) {
-            console.error("Error del servidor:", data);
+            console.error("Error del servidor (Logic):", data);
             throw new Error(data.message || 'Error al procesar el pago');
         }
 
-        // Recuperar URL de pago (Prioridad: payment_url directo)
+        // Recuperar URL de pago
         let paymentUrl = data.payment_url;
         
-        // Si no hay link directo, intentamos construir el estándar si tenemos ID y Key
-        // Nota: Para esto necesitamos la URL base pública, pero NO las claves secretas.
+        // Fallback: construir URL estándar
         if (!paymentUrl && data.id && data.order_key) {
-             const baseUrl = "https://novimundo.com.mx"; // Tu dominio público
+             const baseUrl = "https://novimundo.com.mx"; 
              paymentUrl = `${baseUrl}/checkout/order-pay/${data.id}/?pay_for_order=true&key=${data.order_key}`;
         }
         
