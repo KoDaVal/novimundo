@@ -1,6 +1,7 @@
 // ==========================================
 // CONFIGURACIÓN DE DATOS (Google Sheets)
 // ==========================================
+// ¡IMPORTANTE: "export const" es vital para que otros archivos lo vean!
 export const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1611639201&single=true&output=csv"; 
 export const GOOGLE_SHEET_BEST_SELLERS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1914777355&single=true&output=csv";
 
@@ -61,24 +62,18 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // RUTA DE LA FUNCIÓN EN NETLIFY
-    // Asegúrate de que el archivo en 'netlify/functions/' se llame igual que esto (sin .js)
-    const endpoint = '/.netlify/functions/process-checkout';
+    // CAMBIO IMPORTANTE: Usamos la ruta redirigida /api/
+    // Esto asegura que coincidimos con la regla de redirección de netlify.toml
+    const endpoint = '/api/process-checkout';
 
     // LIMPIEZA DE DATOS PARA EVITAR RECHAZO
-    const cleanLineItems = orderData.line_items.map(item => {
-        // Normalizamos qty y price para evitar NaN y asegurar números
-        const quantity = Number(item.quantity || item.qty || 1);
-        const price = Number(item.price || 0);
-        
-        return {
-            name: item.name || "Producto sin nombre", // Fallback vital
-            quantity: quantity,
-            total: String(price * quantity), // Convertimos a string para WC
-            price: String(price)
-            // No mandamos product_id como obligatorio para evitar errores de ID inválido si no existe en WC
-        };
-    });
+    const cleanLineItems = orderData.line_items.map(item => ({
+        name: item.name || "Producto",
+        quantity: item.qty || 1,
+        total: String(item.price * (item.qty || 1)), // Total de la línea como string
+        price: String(item.price) // Unitario
+        // No mandamos product_id para evitar error "Invalid product ID"
+    }));
 
     const payload = {
         payment_method: orderData.payment_method,
@@ -91,8 +86,7 @@ export const sendOrderToWP = async (orderData) => {
     };
 
     try {
-        console.log("Iniciando checkout seguro en:", endpoint);
-        console.log("Payload enviado:", payload); // Debug para ver qué estamos enviando
+        console.log("Iniciando checkout en:", endpoint);
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -103,10 +97,10 @@ export const sendOrderToWP = async (orderData) => {
         // Leemos texto para diagnosticar si es HTML o JSON
         const textResponse = await response.text();
         
-        // Manejo Específico de Error 404 (Función no encontrada)
+        // 1. Manejo Específico de Error 404 (Función no encontrada)
         if (response.status === 404) {
-            console.error(`❌ ERROR CRÍTICO: La función '${endpoint}' no existe en Netlify.`);
-            console.error("Verifica que la carpeta 'netlify' esté en la raíz de tu repo.");
+            console.error(`❌ ERROR CRÍTICO: La función no se encontró en '${endpoint}'.`);
+            console.error("Posible causa: Netlify no ha desplegado la función o la redirección en netlify.toml no funciona.");
             throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
         }
 
