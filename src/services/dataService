@@ -1,7 +1,6 @@
 // ==========================================
 // CONFIGURACIÓN DE DATOS (Google Sheets)
 // ==========================================
-// ¡IMPORTANTE: "export const" es vital para que otros archivos lo vean!
 export const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1611639201&single=true&output=csv"; 
 export const GOOGLE_SHEET_BEST_SELLERS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1914777355&single=true&output=csv";
 
@@ -62,18 +61,33 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // CAMBIO IMPORTANTE: Usamos la ruta directa nativa de Netlify Functions
-    // Esto evita problemas con redirecciones en netlify.toml que pueden fallar
     const endpoint = '/.netlify/functions/process-checkout';
 
+    // ⚠️ ¡IMPORTANTE! PON AQUÍ EL ID QUE VISTE EN WORDPRESS ⚠️
+    const GENERIC_PRODUCT_ID = 75; // <--- CAMBIA ESTE 0 POR EL NÚMERO (EJ. 154)
+
+    if (GENERIC_PRODUCT_ID === 0) {
+        console.error("⚠️ PRECAUCIÓN: No has configurado el ID del producto genérico en dataService.js");
+    }
+
     // LIMPIEZA DE DATOS PARA EVITAR RECHAZO
-    const cleanLineItems = orderData.line_items.map(item => ({
-        name: item.name || "Producto",
-        quantity: item.qty || 1,
-        total: String(item.price * (item.qty || 1)), // Total de la línea como string
-        price: String(item.price) // Unitario
-        // No mandamos product_id para evitar error "Invalid product ID"
-    }));
+    const cleanLineItems = orderData.line_items.map(item => {
+        const quantity = Number(item.quantity || item.qty || 1);
+        const price = Number(item.price || 0);
+        
+        return {
+            // TRUCO: Usamos el ID del producto comodín para que WP acepte la orden
+            product_id: GENERIC_PRODUCT_ID,
+            
+            // Pero enviamos el nombre y precio REALES del Excel
+            name: item.name || "Producto sin nombre",
+            quantity: quantity,
+            
+            // Forzamos el total para que WooCommerce cobre esto y no $1.00
+            total: String(price * quantity), 
+            price: String(price)
+        };
+    });
 
     const payload = {
         payment_method: orderData.payment_method,
@@ -86,7 +100,7 @@ export const sendOrderToWP = async (orderData) => {
     };
 
     try {
-        console.log("Iniciando checkout en:", endpoint);
+        console.log("🚀 Iniciando checkout con Producto Comodín ID:", GENERIC_PRODUCT_ID);
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -94,13 +108,9 @@ export const sendOrderToWP = async (orderData) => {
             body: JSON.stringify(payload)
         });
 
-        // Leemos texto para diagnosticar si es HTML o JSON
         const textResponse = await response.text();
         
-        // 1. Manejo Específico de Error 404 (Función no encontrada)
         if (response.status === 404) {
-            console.error(`❌ ERROR CRÍTICO: La función no se encontró en '${endpoint}'.`);
-            console.error("Posible causa: Netlify no ha desplegado la función. Verifica que el archivo 'netlify/functions/process-checkout.js' existe en tu repo.");
             throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
         }
 
@@ -108,13 +118,13 @@ export const sendOrderToWP = async (orderData) => {
         try {
             data = JSON.parse(textResponse);
         } catch (e) {
-            console.error("Respuesta RAW del servidor (No es JSON):", textResponse.substring(0, 200));
-            throw new Error(`Error del servidor (No es JSON): ${response.status} ${response.statusText}`);
+            console.error("Respuesta RAW:", textResponse);
+            throw new Error(`Error del servidor (No es JSON): ${response.status}`);
         }
 
         if (!response.ok) {
             console.error("Error lógico del servidor:", data);
-            throw new Error(data.message || 'Error al procesar el pago en el servidor');
+            throw new Error(data.message || 'Error al procesar el pago.');
         }
 
         // Éxito - Construir URL de pago
