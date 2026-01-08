@@ -3,7 +3,24 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions]
+  # Asegura que Netlify sepa que usamos módulos ES
+  node_bundler = "esbuild"
+
+# Redirección explícita para la función
+[[redirects]]
+  from = "/api/process-checkout"
+  to = "/.netlify/functions/process-checkout"
+  status = 200
+
+# Redirección general para otras funciones (opcional)
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
+  status = 200
+
+# Redirección para SPA (React Router) - SIEMPRE AL FINAL
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
