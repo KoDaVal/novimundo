@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
-import { ProductProvider } from './context/ProductContext'; // Importar Nuevo Contexto
-
+import { ProductProvider } from './context/ProductContext';
+import OrderSuccess from './pages/OrderSuccess'; // ✅ Tu nueva página
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
-import SuccessPage from './pages/SuccessPage';
+import SuccessPage from './pages/SuccessPage'; // La antigua (puedes dejarla por si acaso)
 import StoresPage from './pages/StoresPage';
 
 const App = () => {
@@ -25,7 +25,14 @@ const App = () => {
               <Route path="ofertas" element={<CategoryPage isOffers={true} />} />
               <Route path="sucursales" element={<StoresPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
+              
+              {/* Ruta antigua (por si alguien entra por historial) */}
               <Route path="order-success" element={<SuccessPage />} />
+
+              {/* ✅ TU NUEVA RUTA (La que limpia el carrito) */}
+              <Route path="gracias" element={<OrderSuccess />} />
+
+              {/* ⚠️ El comodín siempre al final de la lista */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
@@ -34,4 +41,5 @@ const App = () => {
     </ProductProvider>
   );
 };
+
 export default App;
