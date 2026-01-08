@@ -62,9 +62,9 @@ export const parseCSV = (csvText) => {
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
-    // CAMBIO IMPORTANTE: Usamos la ruta redirigida /api/
-    // Esto asegura que coincidimos con la regla de redirección de netlify.toml
-    const endpoint = '/api/process-checkout';
+    // CAMBIO IMPORTANTE: Usamos la ruta directa nativa de Netlify Functions
+    // Esto evita problemas con redirecciones en netlify.toml que pueden fallar
+    const endpoint = '/.netlify/functions/process-checkout';
 
     // LIMPIEZA DE DATOS PARA EVITAR RECHAZO
     const cleanLineItems = orderData.line_items.map(item => ({
@@ -100,7 +100,7 @@ export const sendOrderToWP = async (orderData) => {
         // 1. Manejo Específico de Error 404 (Función no encontrada)
         if (response.status === 404) {
             console.error(`❌ ERROR CRÍTICO: La función no se encontró en '${endpoint}'.`);
-            console.error("Posible causa: Netlify no ha desplegado la función o la redirección en netlify.toml no funciona.");
+            console.error("Posible causa: Netlify no ha desplegado la función. Verifica que el archivo 'netlify/functions/process-checkout.js' existe en tu repo.");
             throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
         }
 
