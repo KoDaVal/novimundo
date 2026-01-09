@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useProducts } from '../context/ProductContext'; // Importamos Contexto
-import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Armchair } from 'lucide-react';
+import { useProducts } from '../context/ProductContext';
+// Agregué 'Plug' para el icono de electrodomésticos y quité 'Armchair'
+import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Plug } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { bestSellers, loading } = useProducts(); // Usamos datos globales
+  const { bestSellers, loading } = useProducts();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
@@ -16,12 +17,19 @@ const HomePage = () => {
     { id: 3, image: "https://images.unsplash.com/photo-1505693416388-b0346efee539?auto=format&fit=crop&w=1920&q=80", title: "Descanso Perfecto", subtitle: "Colchones y recámaras al mejor precio", cta: "Ver Catálogo", color: "text-noviblue", link: "/categoria/colchones" }
   ];
 
+  // AQUÍ ESTÁ EL CAMBIO PRINCIPAL EN LA ÚLTIMA CATEGORÍA
   const categories = [
     { name: 'Línea Blanca', icon: <Snowflake size={20} />, slug: 'linea-blanca', image: 'https://resources.sears.com.mx/medios-plazavip/fotos/productos_sears1/original/4511460.jpg', color: 'border-noviblue' }, 
     { name: 'Audio', icon: <Headphones size={20} />, slug: 'audio', image: 'https://m.media-amazon.com/images/I/61mOR017+fL.jpg', color: 'border-novired' }, 
     { name: 'Electrónicos', icon: <Laptop size={20} />, slug: 'electronicos', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba13-skyblue-select-202503?wid=892&hei=820&fmt=jpeg&qlt=90&.v=M2RyY09CWXlTQUp1KzEveHR6VXNxcTQ1bzN1SitYTU83Mm9wbk1xa1lWN2h4SGtCQ2R3aStVaDRhL2VUV1NjdkJkRlpCNVhYU3AwTldRQldlSnpRa0lIV0Fmdk9rUlVsZ3hnNXZ3K3lEVlk', color: 'border-novigreen' }, 
     { name: 'Colchones', icon: <BedDouble size={20} />, slug: 'colchones', image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcR8bBxwcA8zmAbc5lgPyL7yg_NlPxEAD35KsRwUZa5GZ6G7lM4qecrMkiJlUBUc4mlZBOJ81-fjWVl9pAXxok8ixHsU0YTSPGkEPheuFWjp', color: 'border-noviyellow' }, 
-    { name: 'Muebles', icon: <Armchair size={20} />, slug: 'muebles', image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=400&q=80', color: 'border-gray-300' }
+    { 
+        name: 'Electrodomésticos', // Nombre cambiado
+        icon: <Plug size={20} />, // Icono cambiado a Enchufe
+        slug: 'electrodomesticos', // Slug actualizado
+        image: 'https://esoquiero.mx/cdn/shop/files/49.jpg?v=1754067860', // Tu imagen nueva
+        color: 'border-gray-300' 
+    }
   ];
 
   useEffect(() => {
@@ -52,7 +60,8 @@ const HomePage = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-10 text-center uppercase tracking-wide">Categorías Populares</h2>
           <div className="flex flex-wrap justify-center gap-10">
             {categories.map((cat, idx) => {
-               const isFullImage = ['Colchones', 'Muebles'].includes(cat.name);
+               // Ajustamos la lógica para que Electrodomésticos también se vea bien si quieres imagen completa o contenida
+               const isFullImage = ['Colchones', 'Electrodomésticos'].includes(cat.name);
                const imgClass = isFullImage ? "w-full h-full object-cover p-0 transition-transform duration-500 group-hover:scale-110" : "w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110";
                return (
                 <div key={idx} className="flex flex-col items-center group cursor-pointer" onClick={() => navigate(`/categoria/${cat.slug}`)}>
@@ -70,7 +79,7 @@ const HomePage = () => {
       <section className="py-12 container mx-auto px-4">
         <div className="flex justify-between items-end mb-8 border-b pb-4"><div><h2 className="text-3xl font-bold text-gray-900">Más Vendidos</h2><div className="h-1 w-20 bg-noviblue mt-2 rounded-full"></div></div></div>
         {loading ? ( <div className="flex justify-center items-center h-64"><Loader size={40} className="animate-spin text-noviblue" /><span className="ml-3 text-gray-500 font-medium">Cargando destacados...</span></div> ) : 
-         bestSellers.length === 0 ? ( <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-500 border border-gray-100"><PackageOpen size={48} className="mx-auto mb-3 text-gray-300" /><p>No hay productos destacados.</p></div> ) : (
+          bestSellers.length === 0 ? ( <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-500 border border-gray-100"><PackageOpen size={48} className="mx-auto mb-3 text-gray-300" /><p>No hay productos destacados.</p></div> ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {bestSellers.map((product) => (
               <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
