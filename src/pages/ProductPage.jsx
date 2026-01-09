@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext'; // Importar Contexto
-import { Star, CreditCard, Truck, ShieldCheck, ShoppingCart, ChevronRight } from 'lucide-react';
+import { Star, CreditCard, Truck, ShieldCheck, ShoppingCart, ChevronRight, Ban, CheckCircle } from 'lucide-react';
 
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products, loading } = useProducts(); // Usamos productos globales
-  
+   
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState('');
@@ -46,10 +46,56 @@ const ProductPage = () => {
                 <div className="mb-2"><span className="text-sm font-bold text-gray-400 uppercase">Marca: {product.brand || 'Novimundo'}</span></div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">{product.name}</h1>
                 <div className="flex items-center gap-4 mb-6"><div className="flex text-noviyellow">{[...Array(5)].map((_, i) => (<Star key={i} size={18} className={i < (product.rating || 5) ? "fill-current" : "text-gray-200"} />))}</div><span className="text-sm font-medium text-gray-500">SKU: {product.id}NM</span></div>
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100"><span className="text-4xl font-extrabold text-gray-900">${product.price.toLocaleString()}</span><div className="flex items-center gap-2 text-sm text-noviblue font-bold mt-1"><CreditCard size={16} /> Hasta 12 MSI</div></div>
+                
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <span className="text-4xl font-extrabold text-gray-900">${product.price.toLocaleString()}</span>
+                    <div className="flex items-center justify-between mt-2">
+                         <div className="flex items-center gap-2 text-sm text-noviblue font-bold"><CreditCard size={16} /> Hasta 12 MSI</div>
+                         
+                         {/* Indicador visual de disponibilidad */}
+                         {product.inStock ? (
+                             <div className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
+                                <CheckCircle size={12}/> Disponible
+                             </div>
+                         ) : (
+                             <div className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                                <Ban size={12}/> Agotado
+                             </div>
+                         )}
+                    </div>
+                </div>
+
                 <p className="text-gray-600 mb-8">{product.description || `Descripción del producto: ${product.name}.`}</p>
-                <div className="flex items-center gap-4 mb-8"><span className="text-sm font-bold text-gray-700">CANTIDAD:</span><div className="flex items-center border border-gray-300 rounded-full"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 hover:text-noviblue">-</button><span className="w-8 text-center font-bold">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 hover:text-noviblue">+</button></div></div>
-                <div className="flex flex-col gap-3 mb-8"><button onClick={() => { addToCart(product, quantity); navigate('/checkout'); }} className="w-full bg-noviyellow text-gray-900 font-extrabold py-4 rounded-full shadow-lg hover:bg-yellow-400">Comprar Ahora</button><button onClick={() => addToCart(product, quantity)} className="w-full bg-white border-2 border-noviblue text-noviblue font-bold py-3.5 rounded-full hover:bg-blue-50 flex items-center justify-center gap-2"><ShoppingCart size={20} /> Agregar al Carrito</button></div>
+                
+                {/* 🚦 BLOQUE DE COMPRA CONTROLADO POR STOCK 🚦 */}
+                {product.inStock ? (
+                    <>
+                        <div className="flex items-center gap-4 mb-8">
+                            <span className="text-sm font-bold text-gray-700">CANTIDAD:</span>
+                            <div className="flex items-center border border-gray-300 rounded-full">
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 hover:text-noviblue">-</button>
+                                <span className="w-8 text-center font-bold">{quantity}</span>
+                                <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 hover:text-noviblue">+</button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3 mb-8">
+                            <button onClick={() => { addToCart(product, quantity); navigate('/checkout'); }} className="w-full bg-noviyellow text-gray-900 font-extrabold py-4 rounded-full shadow-lg hover:bg-yellow-400 transform active:scale-95 transition-all">
+                                Comprar Ahora
+                            </button>
+                            <button onClick={() => addToCart(product, quantity)} className="w-full bg-white border-2 border-noviblue text-noviblue font-bold py-3.5 rounded-full hover:bg-blue-50 flex items-center justify-center gap-2 transform active:scale-95 transition-all">
+                                <ShoppingCart size={20} /> Agregar al Carrito
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col gap-3 mb-8">
+                        <button disabled className="w-full bg-gray-200 text-gray-500 font-extrabold py-4 rounded-full shadow-none cursor-not-allowed flex items-center justify-center gap-2">
+                             <Ban size={20} /> PRODUCTO AGOTADO
+                        </button>
+                    </div>
+                )}
+
                 <div className="mt-auto space-y-4 text-sm text-gray-500"><div className="flex items-start gap-3"><Truck size={20} className="text-noviblue shrink-0" /> Envío Gratis</div><div className="flex items-start gap-3"><ShieldCheck size={20} className="text-noviblue shrink-0" /> Garantía Novimundo</div></div>
             </div>
         </div>
