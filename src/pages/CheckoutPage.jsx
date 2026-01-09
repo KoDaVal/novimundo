@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { sendOrderToWP } from '../services/dataService';
-import { ChevronRight, MapPin, CreditCard, Wallet, DollarSign, AlertTriangle, Loader, CheckCircle, Lock } from 'lucide-react';
+import { ChevronRight, MapPin, CreditCard, Wallet, AlertTriangle, Loader, CheckCircle, Lock } from 'lucide-react';
 
 const CheckoutPage = () => {
     const { cart, cartTotal, setIsCartOpen, clearCart } = useCart();
     const navigate = useNavigate();
     
-    // Estado del formulario (Mantenemos tus nombres de variables originales)
+    // Estado del formulario
     const [formData, setFormData] = useState({ 
         firstName: '', 
         lastName: '', 
@@ -25,50 +25,83 @@ const CheckoutPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    // --- LÓGICA DE CÓDIGOS POSTALES ---
+    const [isPostcodeValid, setIsPostcodeValid] = useState(true); // Asumimos válido al inicio hasta que escriban
+    
+    // Lista de CPs permitidos (como números o strings para comparar fácil)
+    const ALLOWED_POSTCODES = [
+        "30500", "30503", "30507", "30509", "30513", "30515", 
+        "30560", "30563", "30564", 
+        "30600", "30603", "30604", "30605"
+    ];
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        // Validación en tiempo real del CP
+        if (name === 'postcode') {
+            const cleanCode = value.trim();
+            // Si está vacío no mostramos error, pero si tiene 5 dígitos validamos
+            if (cleanCode.length === 5) {
+                if (ALLOWED_POSTCODES.includes(cleanCode)) {
+                    setIsPostcodeValid(true);
+                } else {
+                    setIsPostcodeValid(false);
+                }
+            } else {
+                // Mientras escribe o si borra, reseteamos a válido para no molestar,
+                // pero el 'required' del form evitará enviar si está vacío.
+                setIsPostcodeValid(true); 
+            }
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Doble validación al enviar por si acaso
+        if (!ALLOWED_POSTCODES.includes(formData.postcode.trim())) {
+            setIsPostcodeValid(false);
+            setErrorMsg("Lo sentimos, no tenemos cobertura en este Código Postal.");
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMsg('');
 
-        // --- CORRECCIÓN CLAVE AQUÍ ---
-        // Transformamos tus datos (camelCase) al formato que WooCommerce exige (snake_case)
         const orderPayload = {
             payment_method: paymentMethod,
-            payment_method_title: paymentMethod === 'bacs' ? 'Transferencia Bancaria' : 'Pago contra entrega',
+            payment_method_title: 'Transferencia / Mercado Pago',
             set_paid: false,
             
-            // Billing: WooCommerce necesita 'first_name', 'address_1', etc.
             billing: { 
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 address_1: formData.address,
                 city: formData.city,
                 state: formData.state,
-                postcode: formData.postcode || "00000", // Valor por defecto si está vacío
+                postcode: formData.postcode,
                 country: 'MX',
                 email: formData.email,
                 phone: formData.phone
             },
             
-            // Shipping: Igual que Billing
             shipping: { 
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 address_1: formData.address,
                 city: formData.city,
                 state: formData.state,
-                postcode: formData.postcode || "00000",
+                postcode: formData.postcode,
                 country: 'MX'
             },
             
-            // Line Items: Agregamos 'name' y 'price' explícitamente
             line_items: cart.map(item => ({ 
                 product_id: item.id, 
                 quantity: item.qty,
-                name: item.name,   // IMPORTANTE: Para que no salga como "Producto" genérico
-                price: item.price  // IMPORTANTE: Para calcular totales correctamente
+                name: item.name,
+                price: item.price
             })),
             
             customer_note: formData.note
@@ -116,12 +149,28 @@ const CheckoutPage = () => {
                             <input required name="city" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Ciudad" />
                             <input required name="state" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Estado" />
                         </div>
+                        
+                        {/* INPUT DE CÓDIGO POSTAL CON VALIDACIÓN VISUAL */}
+                        <div>
+                            <input 
+                                required 
+                                name="postcode" 
+                                onChange={handleChange} 
+                                maxLength="5" // Limitamos a 5 caracteres
+                                className={`w-full p-3 border rounded-lg ${!isPostcodeValid ? 'border-red-500 bg-red-50' : ''}`} 
+                                placeholder="Código Postal (Solo cobertura local)" 
+                            />
+                            {!isPostcodeValid && (
+                                <p className="text-red-500 text-xs mt-1 font-bold">
+                                    ❌ Lo sentimos, este servicio no está disponible en esa zona.
+                                </p>
+                            )}
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <input required name="email" type="email" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Email" />
                             <input required name="phone" type="tel" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Teléfono" />
                         </div>
-                        {/* Campo de Código Postal opcional pero recomendado para envíos */}
-                        <input name="postcode" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Código Postal (Opcional)" />
                         <textarea name="note" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Notas del pedido (referencias, etc.)" rows="2"></textarea>
                     </form>
                     
@@ -129,16 +178,15 @@ const CheckoutPage = () => {
                         <CreditCard className="text-noviblue" /> Método de Pago
                     </h2>
                     
+                    {/* SOLO UNA OPCIÓN DE PAGO DISPONIBLE AHORA */}
                     <div className="space-y-3">
-                         <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer ${paymentMethod === 'bacs' ? 'border-noviblue bg-blue-50' : ''}`}>
-                            <input type="radio" name="payment" value="bacs" checked={paymentMethod === 'bacs'} onChange={() => setPaymentMethod('bacs')} className="accent-noviblue" />
-                            <div className="flex-1"><span className="block font-bold">Transferencia / Mercado Pago</span></div>
-                            <Wallet className="text-gray-400" />
-                        </label>
-                         <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer ${paymentMethod === 'cod' ? 'border-noviblue bg-blue-50' : ''}`}>
-                            <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="accent-noviblue" />
-                            <div className="flex-1"><span className="block font-bold">Pago contra entrega</span></div>
-                            <DollarSign className="text-gray-400" />
+                         <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer border-noviblue bg-blue-50`}>
+                            <input type="radio" name="payment" value="bacs" checked={true} readOnly className="accent-noviblue" />
+                            <div className="flex-1">
+                                <span className="block font-bold">Transferencia / Mercado Pago</span>
+                                <span className="text-xs text-gray-500">Paga seguro con tarjeta o efectivo</span>
+                            </div>
+                            <Wallet className="text-noviblue" />
                         </label>
                     </div>
                     
@@ -164,9 +212,25 @@ const CheckoutPage = () => {
                             <span>Total</span>
                             <span>${cartTotal.toLocaleString()}</span>
                         </div>
-                        <button type="submit" form="checkout-form" disabled={isSubmitting} className="w-full bg-noviyellow text-gray-900 font-extrabold py-4 rounded-lg shadow-lg hover:bg-yellow-400 flex items-center justify-center gap-2">
-                            {isSubmitting ? <Loader className="animate-spin" /> : <CheckCircle />} CONFIRMAR PEDIDO
+
+                        {/* EL BOTÓN SE DESACTIVA SI EL CP NO ES VÁLIDO */}
+                        <button 
+                            type="submit" 
+                            form="checkout-form" 
+                            disabled={isSubmitting || !isPostcodeValid} 
+                            className={`w-full font-extrabold py-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
+                                !isPostcodeValid 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-noviyellow text-gray-900 hover:bg-yellow-400'
+                            }`}
+                        >
+                            {isSubmitting ? <Loader className="animate-spin" /> : <CheckCircle />} 
+                            {isPostcodeValid ? 'CONFIRMAR PEDIDO' : 'SIN COBERTURA'}
                         </button>
+
+                        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+                             <Lock size={12}/> Pagos procesados de forma segura
+                        </div>
                     </div>
                 </div>
             </div>
