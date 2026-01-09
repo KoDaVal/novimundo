@@ -65,10 +65,10 @@ const HomePage = () => {
 
   const categories = [
     { name: 'Línea Blanca', icon: <Snowflake size={20} />, slug: 'linea-blanca', image: 'https://resources.sears.com.mx/medios-plazavip/fotos/productos_sears1/original/4511460.jpg', color: 'border-noviblue' }, 
-    { name: 'Audio', icon: <Headphones size={20} />, slug: 'audio', image: 'https://m.media-amazon.com/images/I/61mOR017+fL.jpg', color: 'border-novired' }, 
+    { name: 'Audio', icon: <Headphones size={20} />, slug: 'audio', image: 'https://www.megaaudio.com.mx/cdn/shop/files/Bafle-Profesional-Recargable-KSR-MSA-7515MX-01.jpg?v=1698426215', color: 'border-novired' }, 
     { name: 'Electrónicos', icon: <Laptop size={20} />, slug: 'electronicos', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba13-skyblue-select-202503?wid=892&hei=820&fmt=jpeg&qlt=90&.v=M2RyY09CWXlTQUp1KzEveHR6VXNxcTQ1bzN1SitYTU83Mm9wbk1xa1lWN2h4SGtCQ2R3aStVaDRhL2VUV1NjdkJkRlpCNVhYU3AwTldRQldlSnpRa0lIV0Fmdk9rUlVsZ3hnNXZ3K3lEVlk', color: 'border-novigreen' }, 
     { name: 'Colchones', icon: <BedDouble size={20} />, slug: 'colchones', image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcR8bBxwcA8zmAbc5lgPyL7yg_NlPxEAD35KsRwUZa5GZ6G7lM4qecrMkiJlUBUc4mlZBOJ81-fjWVl9pAXxok8ixHsU0YTSPGkEPheuFWjp', color: 'border-noviyellow' }, 
-    { name: 'Electrodomésticos', icon: <Plug size={20} />, slug: 'electrodomesticos', image: 'https://esoquiero.mx/cdn/shop/files/49.jpg?v=1754067860', color: 'border-gray-300' }
+    { name: 'Electrodomésticos', icon: <Plug size={20} />, slug: 'electrodomesticos', image: 'https://i5.walmartimages.com.mx/mg/gm/3pp/asr/962cf107-c3aa-4e71-bd63-1de21c0fe10a.46e2283af9c989070f50fb2bf0707fe3.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF', color: 'border-gray-300' }
   ];
 
   useEffect(() => {
@@ -178,3 +178,4 @@ const HomePage = () => {
   );
 };
 export default HomePage;
+
