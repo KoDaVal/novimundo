@@ -14,15 +14,14 @@ export const STORES_DATA = [
       address: "Av. Rayon Esq 15 de Febrero, Col. Centro, Tonalá, Chiapas", 
       phone: "966 663 1003", 
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3839.883731872898!2d-93.75486592490595!3d16.08200698459469!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8594950e3d55167b%3A0xe536d3570624773a!2sMuebler%C3%ADa%20Novimundo!5e0!3m2!1ses-419!2smx!4v1736523171120!5m2!1ses-419!2smx" 
-    },
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3833.501091327661!2d-93.7511104!3d16.0913591!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85949fda61d6d4d5%3A0x55bce3be9556d449!2sNOVIMUNDO%20DEL%20PARQUE!5e0!3m2!1ses-419!2smx!4v1767972859519!5m2!1ses-419!2smx"
     { 
       id: 2, 
       name: "Novimundo Mapastepec (Estación)", 
       address: "30560, Dif, 30560 Mapastepec, Chis.", 
       phone: "918 113 7460", 
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3846.577232230559!2d-92.89883502491176!3d15.400325485187766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x858e72e2591b65b1%3A0xb35a9d82121e7d01!2sNovimundo!5e0!3m2!1ses-419!2smx!4v1736523233866!5m2!1ses-419!2smx" 
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3845.9218918392517!2d-92.8997248!3d15.4347665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8592478c617b70f5%3A0x2da688e70bdeb69a!2sMuebler%C3%8Da%20Novimundo%20estaci%C3%B3n!5e0!3m2!1ses-419!2smx!4v1767972919931!5m2!1ses-419!2smx" 
     },
     { 
       id: 3, 
@@ -30,7 +29,7 @@ export const STORES_DATA = [
       address: "Av. Francisco Sarabia, Malucal, 30560 Mapastepec, Chis.", 
       phone: "918 113 7460", 
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3846.564554316625!2d-92.89674062491172!3d15.401614085186835!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x858e72e19662703f%3A0x7707c57c4f4f4632!2sMuebler%C3%ADa%20Novimundo%20Sucursal%202!5e0!3m2!1ses-419!2smx!4v1736523315663!5m2!1ses-419!2smx" 
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3845.6988289703904!2d-92.8906607!3d15.446798000000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x859246f08303748b%3A0x5bdc357aa84d4207!2sNovimundo!5e0!3m2!1ses-419!2smx!4v1767972952740!5m2!1ses-419!2smx" 
     },
     { 
       id: 4, 
@@ -38,7 +37,7 @@ export const STORES_DATA = [
       address: "AV. MORELOS SUR, Calle Ignacio Zaragoza Pte., 30600 Escuintla, Chis.", 
       phone: "966 115 8295", 
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3847.781603504381!2d-92.65882312491278!3d15.277840185289945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x858e0d6501712a3d%3A0x5e85c1860c238b6d!2sNovimundo%20Escuintla!5e0!3m2!1ses-419!2smx!4v1736523363412!5m2!1ses-419!2smx" 
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3848.0404584160065!2d-92.65939379999999!3d15.3200363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85921348d9b34789%3A0x51503352a87bd4d!2sNOVIMUNDO%20ESCUINTLA!5e0!3m2!1ses-419!2smx!4v1767972979114!5m2!1ses-419!2smx" 
     },
     { 
       id: 5, 
@@ -46,7 +45,7 @@ export const STORES_DATA = [
       address: "C. Hidalgo 25B, Tres Picos, 30515 Tres Picos, Chis.", 
       phone: "966 104 7336", 
       hours: "Lunes a Sábado: 9:00 AM - 6:00 PM", 
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3842.102371900326!2d-93.5413110249079!3d15.892013884761453!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85938b8df2f427f7%3A0xd64455855f30e674!2sNovimundo!5e0!3m2!1ses-419!2smx!4v1736523412351!5m2!1ses-419!2smx" 
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7633909.563586162!2d-102.29820639296591!3d20.892399436045444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85937111d0498a0b%3A0x26ace217a031385d!2sLA%20TIENDA%20DEL%20AHORRO!5e0!3m2!1ses-419!2smx!4v1767973025259!5m2!1ses-419!2smx" 
     }
 ];
 
@@ -211,3 +210,4 @@ export const sendOrderToWP = async (orderData) => {
         throw error;
     }
 };
+
