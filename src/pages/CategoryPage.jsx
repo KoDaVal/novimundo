@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext'; // Importar Contexto
-import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart } from 'lucide-react';
+import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban } from 'lucide-react'; // Agregué 'Ban' para icono de bloqueado
 
 const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const { slug } = useParams();
@@ -78,7 +78,29 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                              <div className="p-4 flex-1 flex flex-col">
                                 <p className="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">{product.subcategory}</p>
                                 <h3 className="font-bold text-sm text-gray-800 mb-2 leading-tight line-clamp-2">{product.name}</h3>
-                                <div className="mt-auto flex items-center justify-between"><span className="text-lg font-extrabold text-gray-900">${product.price.toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="p-2 bg-gray-50 rounded-full text-noviblue hover:bg-noviblue hover:text-white transition-colors"><ShoppingCart size={16} /></button></div>
+                                <div className="mt-auto flex items-center justify-between">
+                                    <span className="text-lg font-extrabold text-gray-900">${product.price.toLocaleString()}</span>
+                                    
+                                    {/* 🚦 LÓGICA DE STOCK AQUÍ 🚦 */}
+                                    {product.inStock ? (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }} 
+                                            className="p-2 bg-gray-50 rounded-full text-noviblue hover:bg-noviblue hover:text-white transition-colors"
+                                            title="Agregar al carrito"
+                                        >
+                                            <ShoppingCart size={16} />
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            disabled 
+                                            className="p-2 bg-gray-100 rounded-full text-gray-400 cursor-not-allowed"
+                                            title="Agotado"
+                                        >
+                                            <Ban size={16} /> {/* Icono de prohibido */}
+                                        </button>
+                                    )}
+
+                                </div>
                              </div>
                         </div>
                     ))}
