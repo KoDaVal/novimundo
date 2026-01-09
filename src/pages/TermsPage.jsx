@@ -40,7 +40,7 @@ const TermsPage = () => {
 
           <h3 className="text-gray-900 font-bold text-lg mt-6">3. Formato de Precios</h3>
           <p>
-            El formato como se visualizan los precios en www.novimundo.com puede verse afectado por diferencias en las versiones y configuraciones de los navegadores. El formato correcto es: <strong>$5,999.00</strong> (seis mil novecientos noventa y nueve pesos). Si el usuario tiene una configuración diferente, el separador de millas podría cambiarse por puntos y mostrar un formato incorrecto como $5.999.00.
+            El formato como se visualizan los precios en www.novimundo.com puede verse afectado por diferencias en las versiones y configuraciones de los navegadores. El formato correcto es: <strong>$5,999.00</strong> (cinco mil novecientos noventa y nueve pesos). Si el usuario tiene una configuración diferente, el separador de millas podría cambiarse por puntos y mostrar un formato incorrecto como $5.999.00.
           </p>
 
           <h3 className="text-gray-900 font-bold text-lg mt-6">4. Precios, Promociones y Disponibilidad</h3>
