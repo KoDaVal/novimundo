@@ -158,11 +158,82 @@ const Layout = () => {
       
       <main className="flex-1"><Outlet /></main>
 
-      <footer className="bg-gray-900 text-white mt-auto pt-16 pb-8 border-t-4 border-noviyellow">
-        <div className="container mx-auto px-4"><div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12"><div><h4 className="text-2xl font-bold text-noviblue mb-4">Novimundo</h4><p className="text-gray-400 text-sm leading-relaxed font-medium">las mejores marcas al mejor precio, siempre!</p></div><div><h5 className="font-bold mb-4 text-gray-200 tracking-wide uppercase text-sm">Enlaces Rápidos</h5><ul className="space-y-2 text-sm text-gray-400 font-medium"><li className="hover:text-noviblue cursor-pointer transition-colors" onClick={goHome}>Nosotros</li><li className="hover:text-noviblue cursor-pointer transition-colors" onClick={() => navigate('/sucursales')}>Sucursales</li></ul></div><div><h5 className="font-bold mb-4 text-gray-200 tracking-wide uppercase text-sm">Atención al Cliente</h5><ul className="space-y-2 text-sm text-gray-400 font-medium"><li className="hover:text-noviblue cursor-pointer transition-colors">Preguntas Frecuentes</li><li className="hover:text-noviblue cursor-pointer transition-colors">Envíos y Devoluciones</li><li className="hover:text-noviblue cursor-pointer transition-colors">Garantías</li></ul></div></div><div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 font-medium"><p>&copy; 2026 Novimundo. Todos los derechos reservados.</p><div className="flex gap-4 mt-4 md:mt-0"><span className="cursor-pointer hover:text-gray-300">Aviso de Privacidad</span><span className="cursor-pointer hover:text-gray-300">Términos y Condiciones</span></div></div></div>
+<footer className="bg-gray-900 text-white mt-auto pt-16 pb-8 border-t-4 border-noviyellow">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            
+            {/* Columna 1: Logo y Eslogan */}
+            <div>
+              <h4 className="text-2xl font-bold text-noviblue mb-4">Novimundo</h4>
+              <p className="text-gray-400 text-sm leading-relaxed font-medium">
+                las mejores marcas al mejor precio, siempre!
+              </p>
+            </div>
+
+            {/* Columna 2: Enlaces Rápidos */}
+            <div>
+              <h5 className="font-bold mb-4 text-gray-200 tracking-wide uppercase text-sm">Enlaces Rápidos</h5>
+              <ul className="space-y-2 text-sm text-gray-400 font-medium">
+                <li 
+                  className="hover:text-noviblue cursor-pointer transition-colors" 
+                  onClick={() => navigate('/nosotros')}
+                >
+                  Nosotros
+                </li>
+                <li 
+                  className="hover:text-noviblue cursor-pointer transition-colors" 
+                  onClick={() => navigate('/sucursales')}
+                >
+                  Sucursales
+                </li>
+              </ul>
+            </div>
+
+            {/* Columna 3: Atención al Cliente */}
+            <div>
+              <h5 className="font-bold mb-4 text-gray-200 tracking-wide uppercase text-sm">Atención al Cliente</h5>
+              <ul className="space-y-2 text-sm text-gray-400 font-medium">
+                <li 
+                  className="hover:text-noviblue cursor-pointer transition-colors" 
+                  onClick={() => navigate('/preguntas-frecuentes')}
+                >
+                  Preguntas Frecuentes
+                </li>
+                {/* Envíos y Devoluciones ELIMINADO */}
+                <li 
+                  className="hover:text-noviblue cursor-pointer transition-colors" 
+                  onClick={() => navigate('/preguntas-frecuentes')}
+                >
+                  Garantías
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Barra inferior: Copyright y Legales */}
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 font-medium">
+            <p>&copy; 2026 Novimundo. Todos los derechos reservados.</p>
+            <div className="flex gap-4 mt-4 md:mt-0">
+              <span 
+                className="cursor-pointer hover:text-gray-300" 
+                onClick={() => navigate('/terminos-y-condiciones')}
+              >
+                Aviso de Privacidad
+              </span>
+              <span 
+                className="cursor-pointer hover:text-gray-300" 
+                onClick={() => navigate('/terminos-y-condiciones')}
+              >
+                Términos y Condiciones
+              </span>
+            </div>
+          </div>
+        </div>
       </footer>
       <style>{`.text-noviblue { color: #009CD3; } .bg-noviblue { background-color: #009CD3; } .border-noviblue { border-color: #009CD3; } .text-novired { color: #ED1C24; } .bg-novired { background-color: #ED1C24; } .border-novired { border-color: #ED1C24; } .text-noviyellow { color: #FFC90E; } .bg-noviyellow { background-color: #FFC90E; } .border-noviyellow { border-color: #FFC90E; } .text-novigreen { color: #B5E61D; } .bg-novigreen { background-color: #B5E61D; } .border-novigreen { border-color: #B5E61D; } @keyframes fade-in-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-down { animation: fade-in-down 0.2s ease-out; }`}</style>
     </div>
   );
 };
+
 export default Layout;
