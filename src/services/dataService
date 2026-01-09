@@ -15,7 +15,7 @@ export const STORES_DATA = [
       phone: "966 663 1003", 
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3833.501091327661!2d-93.7511104!3d16.0913591!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85949fda61d6d4d5%3A0x55bce3be9556d449!2sNOVIMUNDO%20DEL%20PARQUE!5e0!3m2!1ses-419!2smx!4v1767972859519!5m2!1ses-419!2smx"
-    }, // <--- AQUÍ FALTABA ESTA COMA Y LLAVE
+    }, // <--- CORREGIDO: Faltaba este cierre
     { 
       id: 2, 
       name: "Novimundo Mapastepec (Estación)", 
@@ -51,17 +51,68 @@ export const STORES_DATA = [
 ];
 
 // ==========================================
-// PARSER CSV
+// PARSER CSV ROBUSTO (MÁQUINA DE ESTADOS)
 // ==========================================
 export const parseCSV = (csvText) => {
-    if (!csvText || csvText.trim() === "") return [];
-    const lines = csvText.trim().split(/\r\n|\n/);
-    if (lines.length === 0) return [];
-    const firstLine = lines[0];
-    const separator = firstLine.includes('\t') ? '\t' : ',';
-    const rawHeaders = firstLine.split(separator).map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+    if (!csvText) return [];
     
-    // Mapeo flexible (AGREGAMOS 'stock')
+    // 1. Limpieza inicial para quitar caracteres basura del inicio (BOM)
+    const text = csvText.trim().replace(/^\uFEFF/, '');
+    if (!text) return [];
+
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let inQuotes = false;
+    
+    // Detectamos separador (coma o tabulación)
+    const firstLineSnippet = text.split('\n')[0];
+    const separator = firstLineSnippet.includes('\t') ? '\t' : ',';
+
+    // 2. Leemos caracter por caracter (Esto arregla el problema de los Enter)
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (inQuotes) {
+            if (char === '"' && nextChar === '"') {
+                currentField += '"'; // Comilla escapada ("")
+                i++; 
+            } else if (char === '"') {
+                inQuotes = false; // Cierra comillas
+            } else {
+                currentField += char; // Texto normal (incluyendo enters)
+            }
+        } else {
+            if (char === '"') {
+                inQuotes = true; // Abre comillas
+            } else if (char === separator) {
+                currentRow.push(currentField); // Fin del campo
+                currentField = '';
+            } else if (char === '\n' || char === '\r') {
+                // Manejo de fin de línea
+                if (char === '\r' && nextChar === '\n') i++; // Salto Windows CRLF
+                
+                currentRow.push(currentField);
+                if (currentRow.length > 0) rows.push(currentRow);
+                currentRow = [];
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+    }
+    // Agregar el último campo si quedó pendiente
+    if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+    }
+
+    // --- PROCESAMIENTO DE DATOS ---
+    if (rows.length < 2) return []; // Si solo hay cabecera
+
+    // Mapeo de columnas
+    const rawHeaders = rows[0].map(h => h.trim().toLowerCase());
     const headerMap = { 
         'id': 'id', 'sku': 'id', 
         'nombre': 'name', 'producto': 'name', 'nombre del producto': 'name', 
@@ -75,23 +126,26 @@ export const parseCSV = (csvText) => {
         'descripcion': 'description', 'descripción': 'description', 
         'tag': 'tag', 'etiqueta': 'tag', 
         'rating': 'rating',
-        'stock': 'stock', 'inventario': 'stock', 'disponible': 'stock' // NUEVO
+        'stock': 'stock', 'inventario': 'stock', 'disponible': 'stock'
     };
-    
+
     const columnIndices = {};
-    rawHeaders.forEach((header, index) => { const mappedKey = headerMap[header]; if (mappedKey) columnIndices[mappedKey] = index; });
-    
-    const parsedItems = lines.slice(1).map(line => {
-        let values;
-        if (separator === '\t') { values = line.split('\t'); } else { values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); }
-        const cleanValues = values.map(v => v ? v.replace(/^"|"$/g, '').trim() : '');
-        if (cleanValues.length < 2) return null;
-        
+    rawHeaders.forEach((header, index) => { 
+        const mappedKey = headerMap[header]; 
+        if (mappedKey) columnIndices[mappedKey] = index; 
+    });
+
+    const parsedItems = rows.slice(1).map(values => {
+        // Validación básica: si la fila tiene muy pocas columnas, es basura
+        if (values.length < 2) return null;
+
         const obj = {};
         Object.keys(columnIndices).forEach(key => {
             const index = columnIndices[key];
-            let value = cleanValues[index];
+            let value = values[index];
+            
             if (value !== undefined) {
+                value = value.trim();
                 if (key === 'price' || key === 'id') { 
                     value = value.replace(/[$,]/g, ''); 
                     value = Number(value) || 0; 
@@ -105,11 +159,13 @@ export const parseCSV = (csvText) => {
         if (!obj.image) obj.image = "https://via.placeholder.com/300?text=Sin+Imagen";
         if (obj.category === 'linea_blanca') obj.category = 'Línea Blanca';
         
-        // LÓGICA DE STOCK (NUEVO) 🚦
+        // STOCK 🚦
         if (obj.stock) {
             const stockValue = String(obj.stock).toLowerCase().trim();
             obj.inStock = ['si', 'sí', 'true', '1', 'yes'].includes(stockValue);
         } else {
+            // Si no hay columna stock, asumimos false (agotado) o true (disponible) según prefieras.
+            // Puse false para evitar ventas accidentales si falla algo.
             obj.inStock = false; 
         }
 
@@ -117,8 +173,16 @@ export const parseCSV = (csvText) => {
         return obj;
     }).filter(item => item !== null);
     
-    const uniqueItems = []; const seenIds = new Set();
-    parsedItems.forEach(item => { if (!seenIds.has(item.id)) { seenIds.add(item.id); uniqueItems.push(item); } });
+    // Eliminar duplicados por ID
+    const uniqueItems = []; 
+    const seenIds = new Set();
+    parsedItems.forEach(item => { 
+        if (!seenIds.has(item.id)) { 
+            seenIds.add(item.id); 
+            uniqueItems.push(item); 
+        } 
+    });
+    
     return uniqueItems;
 };
 
@@ -127,28 +191,17 @@ export const parseCSV = (csvText) => {
 // ==========================================
 export const sendOrderToWP = async (orderData) => {
     const endpoint = '/.netlify/functions/process-checkout';
-
-    // ⚠️ ¡IMPORTANTE! PON AQUÍ EL ID QUE VISTE EN WORDPRESS ⚠️
     const GENERIC_PRODUCT_ID = 75; 
 
-    if (GENERIC_PRODUCT_ID === 0) {
-        console.error("⚠️ PRECAUCIÓN: No has configurado el ID del producto genérico en dataService.js");
-    }
+    if (GENERIC_PRODUCT_ID === 0) console.error("⚠️ ID genérico no configurado");
 
-    // LIMPIEZA DE DATOS PARA EVITAR RECHAZO
     const cleanLineItems = orderData.line_items.map(item => {
         const quantity = Number(item.quantity || item.qty || 1);
         const price = Number(item.price || 0);
-        
         return {
-            // TRUCO: Usamos el ID del producto comodín para que WP acepte la orden
             product_id: GENERIC_PRODUCT_ID,
-            
-            // Pero enviamos el nombre y precio REALES del Excel
             name: item.name || "Producto sin nombre",
             quantity: quantity,
-            
-            // Forzamos el total para que WooCommerce cobre esto y no $1.00
             total: String(price * quantity), 
             price: String(price)
         };
@@ -165,8 +218,6 @@ export const sendOrderToWP = async (orderData) => {
     };
 
     try {
-        console.log("🚀 Iniciando checkout con Producto Comodín ID:", GENERIC_PRODUCT_ID);
-        
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -175,31 +226,23 @@ export const sendOrderToWP = async (orderData) => {
 
         const textResponse = await response.text();
         
-        if (response.status === 404) {
-            throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
-        }
+        if (response.status === 404) throw new Error("Sistema de pagos no disponible (Error 404).");
 
         let data;
         try {
             data = JSON.parse(textResponse);
         } catch (e) {
             console.error("Respuesta RAW:", textResponse);
-            throw new Error(`Error del servidor (No es JSON): ${response.status}`);
+            throw new Error(`Error del servidor: ${response.status}`);
         }
 
-        if (!response.ok) {
-            console.error("Error lógico del servidor:", data);
-            throw new Error(data.message || 'Error al procesar el pago.');
-        }
+        if (!response.ok) throw new Error(data.message || 'Error al procesar el pago.');
 
-        // Éxito - Construir URL de pago
         let paymentUrl = data.payment_url || data.meta_data?.find(m => m.key === '_payment_link')?.value;
-        
         if (!paymentUrl && data.id && data.order_key) {
              const baseUrl = "https://novimundo.com.mx"; 
              paymentUrl = `${baseUrl}/checkout/order-pay/${data.id}/?pay_for_order=true&key=${data.order_key}`;
         }
-        
         return { ...data, payment_url: paymentUrl };
 
     } catch (error) {
