@@ -24,7 +24,7 @@ const HomePage = () => {
     const fetchBanners = async () => {
         try {
             // Tu link CSV específico para la sección de banners
-            const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1161315582&single=true&output=csv');
+            const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=100796148&single=true&output=csv');
             const text = await response.text();
             
             // Rompemos el texto por líneas (filas) y saltamos la primera (encabezados)
@@ -66,7 +66,7 @@ const HomePage = () => {
   const categories = [
     { name: 'Línea Blanca', icon: <Snowflake size={20} />, slug: 'linea-blanca', image: 'https://resources.sears.com.mx/medios-plazavip/fotos/productos_sears1/original/4511460.jpg', color: 'border-noviblue' }, 
     { name: 'Audio', icon: <Headphones size={20} />, slug: 'audio', image: 'https://www.megaaudio.com.mx/cdn/shop/files/Bafle-Profesional-Recargable-KSR-MSA-7515MX-01.jpg?v=1698426215', color: 'border-novired' }, 
-    { name: 'Electrónicos', icon: <Laptop size={20} />, slug: 'electronicos', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba13-skyblue-select-202503?wid=892&hei=820&fmt=jpeg&qlt=90&.v=M2RyY09CWXlTQUp1KzEveHR6VXNxcTQ1bzN1SitYTU83Mm9wbk1xa1lWN2h4SGtCQ2R3aStVaDRhL2VUV1NjdkJkRlpCNVhYU3AwTldRQldlSnpRa0lIV0Fmdk9rUlVsZ3hnNXZ3K3lEVlk', color: 'border-novigreen' }, 
+    { name: 'Electrónicos', icon: <Laptop size={20} />, slug: 'electronicos', image: 'https://www.rac.mx/wp-content/uploads/2024/11/television-hisense-43-pulgadas-full-hd-smart-tv.jpg', color: 'border-novigreen' }, 
     { name: 'Colchones', icon: <BedDouble size={20} />, slug: 'colchones', image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcR8bBxwcA8zmAbc5lgPyL7yg_NlPxEAD35KsRwUZa5GZ6G7lM4qecrMkiJlUBUc4mlZBOJ81-fjWVl9pAXxok8ixHsU0YTSPGkEPheuFWjp', color: 'border-noviyellow' }, 
     { name: 'Electrodomésticos', icon: <Plug size={20} />, slug: 'electrodomesticos', image: 'https://i5.walmartimages.com.mx/mg/gm/3pp/asr/962cf107-c3aa-4e71-bd63-1de21c0fe10a.46e2283af9c989070f50fb2bf0707fe3.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF', color: 'border-gray-300' }
   ];
@@ -178,4 +178,5 @@ const HomePage = () => {
   );
 };
 export default HomePage;
+
 
