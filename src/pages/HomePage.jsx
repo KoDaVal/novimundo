@@ -8,7 +8,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { bestSellers, loading } = useProducts();
-  
+   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState([]);
 
@@ -143,9 +143,20 @@ const HomePage = () => {
                   {product.tag && (<span className={`absolute top-4 left-4 ${product.tagColor || 'bg-noviblue'} text-white text-[10px] font-bold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-wider`}>{product.tag}</span>)}
                   <button className="absolute top-4 right-4 bg-gray-50 p-2 rounded-full text-gray-400 hover:text-novired hover:bg-red-50 transition-colors z-10"><Heart size={18} /></button>
                   <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/200?text=Sin+Imagen'}/>
+                  
+                  {/* AQUÍ ESTÁ EL CAMBIO PARA STOCK 🚦 */}
                   <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-white via-white to-transparent">
-                    <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-noviblue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-sky-600 transition-colors flex items-center justify-center gap-2 text-sm"><ShoppingCart size={16} /> Agregar</button>
+                    {product.inStock ? (
+                        <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-noviblue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-sky-600 transition-colors flex items-center justify-center gap-2 text-sm">
+                            <ShoppingCart size={16} /> Agregar
+                        </button>
+                    ) : (
+                        <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-lg shadow-none cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                            <ShoppingCart size={16} /> Agotado
+                        </button>
+                    )}
                   </div>
+
                 </div>
                 <div className="p-5">
                   <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">{product.category}</p>
