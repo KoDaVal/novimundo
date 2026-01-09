@@ -10,6 +10,9 @@ import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage'; // La antigua (puedes dejarla por si acaso)
 import StoresPage from './pages/StoresPage';
+import AboutPage from './pages/AboutPage';
+import FaqPage from './pages/FaqPage';
+import TermsPage from './pages/TermsPage';
 
 const App = () => {
   return (
@@ -25,6 +28,9 @@ const App = () => {
               <Route path="ofertas" element={<CategoryPage isOffers={true} />} />
               <Route path="sucursales" element={<StoresPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
+              <Route path="nosotros" element={<AboutPage />} />
+              <Route path="preguntas-frecuentes" element={<FaqPage />} />
+              <Route path="terminos-y-condiciones" element={<TermsPage />} />
               
               {/* Ruta antigua (por si alguien entra por historial) */}
               <Route path="order-success" element={<SuccessPage />} />
@@ -43,3 +49,4 @@ const App = () => {
 };
 
 export default App;
+
