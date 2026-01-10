@@ -43,7 +43,7 @@ const ProductPage = () => {
                 </div>
             </div>
             <div className="lg:w-2/5 flex flex-col">
-                <div className="mb-2"><span className="text-sm font-bold text-gray-400 uppercase">Marca: {product.brand || 'Novimundo'}</span></div>
+                <div className="mb-2"><span className="text-sm font-bold text-noviblue uppercase">Marca: {product.brand || 'Novimundo'}</span></div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">{product.name}</h1>
                 <div className="flex items-center gap-4 mb-6"><div className="flex text-noviyellow">{[...Array(5)].map((_, i) => (<Star key={i} size={18} className={i < (product.rating || 5) ? "fill-current" : "text-gray-200"} />))}</div><span className="text-sm font-medium text-gray-500">SKU: {product.id}NM</span></div>
                 
