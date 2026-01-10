@@ -1,300 +1,198 @@
 // ==========================================
-
 // CONFIGURACIÓN DE DATOS (Google Sheets)
-
 // ==========================================
-
 export const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1611639201&single=true&output=csv"; 
-
 export const GOOGLE_SHEET_BEST_SELLERS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=1914777355&single=true&output=csv";
 
-
-
 // ==========================================
-
 // DATOS DE SUCURSALES (Estáticos)
-
 // ==========================================
-
 export const STORES_DATA = [
-
     { 
-
       id: 1, 
-
       name: "Novimundo Tonalá", 
-
       address: "Av. Rayon Esq 15 de Febrero, Col. Centro, Tonalá, Chiapas", 
-
       phone: "966 663 1003", 
-
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3833.501091327661!2d-93.7511104!3d16.0913591!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85949fda61d6d4d5%3A0x55bce3be9556d449!2sNOVIMUNDO%20DEL%20PARQUE!5e0!3m2!1ses-419!2smx!4v1767972859519!5m2!1ses-419!2smx"
-
-    }, // <--- AQUÍ FALTABA ESTA COMA Y LLAVE
-
+    },
     { 
-
       id: 2, 
-
       name: "Novimundo Mapastepec (Estación)", 
-
       address: "30560, Dif, 30560 Mapastepec, Chis.", 
-
       phone: "918 113 7460", 
-
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3845.9218918392517!2d-92.8997248!3d15.4347665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8592478c617b70f5%3A0x2da688e70bdeb69a!2sMuebler%C3%8Da%20Novimundo%20estaci%C3%B3n!5e0!3m2!1ses-419!2smx!4v1767972919931!5m2!1ses-419!2smx" 
-
     },
-
     { 
-
       id: 3, 
-
       name: "Novimundo Mapastepec (Sucursal 2)", 
-
       address: "Av. Francisco Sarabia, Malucal, 30560 Mapastepec, Chis.", 
-
       phone: "918 113 7460", 
-
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3845.6988289703904!2d-92.8906607!3d15.446798000000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x859246f08303748b%3A0x5bdc357aa84d4207!2sNovimundo!5e0!3m2!1ses-419!2smx!4v1767972952740!5m2!1ses-419!2smx" 
-
     },
-
     { 
-
       id: 4, 
-
       name: "Novimundo Escuintla", 
-
       address: "AV. MORELOS SUR, Calle Ignacio Zaragoza Pte., 30600 Escuintla, Chis.", 
-
       phone: "966 115 8295", 
-
       hours: "Lunes a Domingo: 9:00 AM - 6:00 PM", 
-
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3848.0404584160065!2d-92.65939379999999!3d15.3200363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85921348d9b34789%3A0x51503352a87bd4d!2sNOVIMUNDO%20ESCUINTLA!5e0!3m2!1ses-419!2smx!4v1767972979114!5m2!1ses-419!2smx" 
-
     },
-
     { 
-
       id: 5, 
-
       name: "Novimundo Tres Picos", 
-
       address: "C. Hidalgo 25B, Tres Picos, 30515 Tres Picos, Chis.", 
-
       phone: "966 104 7336", 
-
       hours: "Lunes a Sábado: 9:00 AM - 6:00 PM", 
-
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7633909.563586162!2d-102.29820639296591!3d20.892399436045444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85937111d0498a0b%3A0x26ace217a031385d!2sLA%20TIENDA%20DEL%20AHORRO!5e0!3m2!1ses-419!2smx!4v1767973025259!5m2!1ses-419!2smx" 
-
     }
-
 ];
 
-
-
 // ==========================================
-
 // PARSER CSV
-
 // ==========================================
-
 export const parseCSV = (csvText) => {
-
     if (!csvText || csvText.trim() === "") return [];
-
     const lines = csvText.trim().split(/\r\n|\n/);
-
     if (lines.length === 0) return [];
-
     const firstLine = lines[0];
-
     const separator = firstLine.includes('\t') ? '\t' : ',';
-
     const rawHeaders = firstLine.split(separator).map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
-
     
-
-    // Mapeo flexible (AGREGAMOS 'stock')
-
     const headerMap = { 
-
         'id': 'id', 'sku': 'id', 
-
         'nombre': 'name', 'producto': 'name', 'nombre del producto': 'name', 
-
         'precio': 'price', 'costo': 'price', 
-
         'categoria': 'category', 'categoría': 'category', 
-
         'subcategoria': 'subcategory', 'subcategoría': 'subcategory', 
-
         'marca': 'brand', 
-
         'imagen': 'image', 'foto': 'image', 'url imagen': 'image', 
-
         'imagen2': 'image2', 'foto2': 'image2', 
-
         'imagen3': 'image3', 'foto3': 'image3', 
-
         'descripcion': 'description', 'descripción': 'description', 
-
         'tag': 'tag', 'etiqueta': 'tag', 
-
         'rating': 'rating',
-
-        'stock': 'stock', 'inventario': 'stock', 'disponible': 'stock' // NUEVO
-
+        'stock': 'stock', 'inventario': 'stock', 'disponible': 'stock'
     };
-
     
-
     const columnIndices = {};
-
     rawHeaders.forEach((header, index) => { const mappedKey = headerMap[header]; if (mappedKey) columnIndices[mappedKey] = index; });
-
     
-
     const parsedItems = lines.slice(1).map(line => {
-
         let values;
-
         if (separator === '\t') { values = line.split('\t'); } else { values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); }
-
         const cleanValues = values.map(v => v ? v.replace(/^"|"$/g, '').trim() : '');
-
         if (cleanValues.length < 2) return null;
-
         
-
         const obj = {};
-
         Object.keys(columnIndices).forEach(key => {
-
             const index = columnIndices[key];
-
             let value = cleanValues[index];
-
             if (value !== undefined) {
-
                 if (key === 'price' || key === 'id') { 
-
                     value = value.replace(/[$,]/g, ''); 
-
                     value = Number(value) || 0; 
-
                 }
-
                 obj[key] = value;
-
             }
-
         });
 
-
-
-        // Valores por defecto
-
         if (!obj.rating) obj.rating = 5;
-
         if (!obj.image) obj.image = "https://via.placeholder.com/300?text=Sin+Imagen";
-
         if (obj.category === 'linea_blanca') obj.category = 'Línea Blanca';
-
         
-
-        // LÓGICA DE STOCK (NUEVO) 🚦
-
         if (obj.stock) {
-
             const stockValue = String(obj.stock).toLowerCase().trim();
-
             obj.inStock = ['si', 'sí', 'true', '1', 'yes'].includes(stockValue);
-
         } else {
-
             obj.inStock = false; 
-
         }
 
-
-
         if (!obj.name && !obj.price) return null;
-
         return obj;
-
     }).filter(item => item !== null);
-
     
-
     const uniqueItems = []; const seenIds = new Set();
-
     parsedItems.forEach(item => { if (!seenIds.has(item.id)) { seenIds.add(item.id); uniqueItems.push(item); } });
-
     return uniqueItems;
-
 };
 
-
-
 // ==========================================
-
 // SERVICIO DE WOOCOMMERCE (PROXY SEGURO)
-
 // ==========================================
-
 export const sendOrderToWP = async (orderData) => {
-
     const endpoint = '/.netlify/functions/process-checkout';
-
-
-
-    // ⚠️ ¡IMPORTANTE! PON AQUÍ EL ID QUE VISTE EN WORDPRESS ⚠️
 
     const GENERIC_PRODUCT_ID = 75; 
 
-
-
     if (GENERIC_PRODUCT_ID === 0) {
-
         console.error("⚠️ PRECAUCIÓN: No has configurado el ID del producto genérico en dataService.js");
-
     }
 
-
-
-    // LIMPIEZA DE DATOS PARA EVITAR RECHAZO
-
     const cleanLineItems = orderData.line_items.map(item => {
-
         const quantity = Number(item.quantity || item.qty || 1);
-
         const price = Number(item.price || 0);
-
         
-
         return {
-
-            // TRUCO: Usamos el ID del producto comodín para que WP acepte la orden
-
             product_id: GENERIC_PRODUCT_ID,
-
-            
-
-            // Pero enviamos el nombre y precio REALES del Excel
-
             name: item.name || "Producto sin nombre",
-
             quantity: quantity,
+            total: String(price * quantity), 
+            price: String(price)
+        };
+    });
 
-            
+    const payload = {
+        payment_method: orderData.payment_method,
+        payment_method_title: orderData.payment_method_title,
+        set_paid: false,
+        billing: orderData.billing,
+        shipping: orderData.shipping,
+        line_items: cleanLineItems,
+        customer_note: orderData.customer_note || ""
+    };
 
+    try {
+        console.log("🚀 Iniciando checkout con Producto Comodín ID:", GENERIC_PRODUCT_ID);
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const textResponse = await response.text();
+        
+        if (response.status === 404) {
+            throw new Error("El sistema de pagos no está disponible temporalmente (Error 404).");
+        }
+
+        let data;
+        try {
+            data = JSON.parse(textResponse);
+        } catch (e) {
+            console.error("Respuesta RAW:", textResponse);
+            throw new Error(`Error del servidor (No es JSON): ${response.status}`);
+        }
+
+        if (!response.ok) {
+            console.error("Error lógico del servidor:", data);
+            throw new Error(data.message || 'Error al procesar el pago.');
+        }
+
+        let paymentUrl = data.payment_url || data.meta_data?.find(m => m.key === '_payment_link')?.value;
+        
+        if (!paymentUrl && data.id && data.order_key) {
+             const baseUrl = "https://novimundo.com.mx"; 
+             paymentUrl = `${baseUrl}/checkout/order-pay/${data.id}/?pay_for_order=true&key=${data.order_key}`;
+        }
+        
+        return { ...data, payment_url: paymentUrl };
+
+    } catch (error) {
+        console.error("Fallo crítico en checkout:", error);
+        throw error;
+    }
+};
