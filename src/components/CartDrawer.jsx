@@ -3,7 +3,18 @@ import { ShoppingCart, X, Minus, Plus, Trash2, Lock } from 'lucide-react';
 
 const CartDrawer = ({ isOpen, onClose, cartItems, onRemove, onUpdateQty, onCheckout }) => {
     if (!isOpen) return null;
+    
     const total = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+    // Función auxiliar para formatear dinero (MXN)
+    const format = (amount) => {
+        return amount.toLocaleString('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2
+        });
+    };
+
     return (
         <div className="fixed inset-0 z-[60] flex justify-end">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
@@ -23,7 +34,7 @@ const CartDrawer = ({ isOpen, onClose, cartItems, onRemove, onUpdateQty, onCheck
                                     <div><h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">{item.name}</h3><p className="text-xs text-gray-400 mt-1 uppercase">{item.brand}</p></div>
                                     <div className="flex justify-between items-end mt-2">
                                         <div className="flex items-center border border-gray-200 rounded-md"><button onClick={() => onUpdateQty(item.id, item.qty - 1)} className="p-1 hover:bg-gray-100 text-gray-500 disabled:opacity-50" disabled={item.qty <= 1}><Minus size={14} /></button><span className="w-8 text-center text-xs font-bold">{item.qty}</span><button onClick={() => onUpdateQty(item.id, item.qty + 1)} className="p-1 hover:bg-gray-100 text-gray-500"><Plus size={14} /></button></div>
-                                        <div className="text-right"><p className="font-extrabold text-noviblue">${(item.price * item.qty).toLocaleString()}</p></div>
+                                        <div className="text-right"><p className="font-extrabold text-noviblue">{format(item.price * item.qty)}</p></div>
                                     </div>
                                 </div>
                                 <button onClick={() => onRemove(item.id)} className="text-gray-300 hover:text-novired self-start p-1 transition"><Trash2 size={16} /></button>
@@ -33,7 +44,7 @@ const CartDrawer = ({ isOpen, onClose, cartItems, onRemove, onUpdateQty, onCheck
                 </div>
                 {cartItems.length > 0 && (
                     <div className="p-6 border-t border-gray-100 bg-gray-50">
-                        <div className="flex justify-between items-center mb-4"><span className="text-gray-500 font-medium">Subtotal</span><span className="text-2xl font-extrabold text-gray-900">${total.toLocaleString()}</span></div>
+                        <div className="flex justify-between items-center mb-4"><span className="text-gray-500 font-medium">Subtotal</span><span className="text-2xl font-extrabold text-gray-900">{format(total)}</span></div>
                         <p className="text-xs text-gray-400 text-center mb-4">Envío calculado al finalizar</p>
                         <button onClick={onCheckout} className="w-full bg-noviyellow text-gray-900 font-extrabold py-3.5 rounded-lg shadow-lg hover:bg-yellow-400 transition flex items-center justify-center gap-2 transform hover:-translate-y-1"><Lock size={18} /> PROCEDER AL PAGO</button>
                     </div>
