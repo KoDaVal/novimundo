@@ -79,7 +79,7 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                                 <p className="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">{product.subcategory}</p>
                                 <h3 className="font-bold text-sm text-gray-800 mb-2 leading-tight line-clamp-2">{product.name}</h3>
                                 <div className="mt-auto flex items-center justify-between">
-                                    <span className="text-lg font-extrabold text-gray-900">${product.price.toLocaleString()}</span>
+                                    <span className="text-lg font-extrabold text-gray-900">{product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: product.price % 1 === 0 ? 0 : 2 })}</span>
                                     
                                     {/* 🚦 LÓGICA DE STOCK AQUÍ 🚦 */}
                                     {product.inStock ? (
