@@ -48,7 +48,7 @@ const ProductPage = () => {
                 <div className="flex items-center gap-4 mb-6"><div className="flex text-noviyellow">{[...Array(5)].map((_, i) => (<Star key={i} size={18} className={i < (product.rating || 5) ? "fill-current" : "text-gray-200"} />))}</div><span className="text-sm font-medium text-gray-500">SKU: {product.id}NM</span></div>
                 
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <span className="text-4xl font-extrabold text-gray-900">${product.price.toLocaleString()}</span>
+                    <span className="text-4xl font-extrabold text-gray-900">{product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: product.price % 1 === 0 ? 0 : 2 })}</span>
                     <div className="flex items-center justify-between mt-2">
                          <div className="flex items-center gap-2 text-sm text-noviblue font-bold"><CreditCard size={16} /> Hasta 12 MSI</div>
                          
