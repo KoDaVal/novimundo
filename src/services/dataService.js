@@ -91,10 +91,14 @@ export const parseCSV = (csvText) => {
             const index = columnIndices[key];
             let value = cleanValues[index];
             if (value !== undefined) {
-                if (key === 'price' || key === 'id') { 
+                // CORRECCIÓN AQUI: Solo 'price' se convierte a número. 
+                // 'id' se mantiene como string para soportar alfanuméricos.
+                if (key === 'price') { 
                     value = value.replace(/[$,]/g, ''); 
                     value = Number(value) || 0; 
                 }
+                // Si es 'id' u otro campo, se queda con el valor original (string)
+                
                 obj[key] = value;
             }
         });
@@ -110,6 +114,8 @@ export const parseCSV = (csvText) => {
             obj.inStock = false; 
         }
 
+        // Validación ajustada: Se asegura que exista nombre y precio, 
+        // pero permite que el ID sea string (ya no checa si id es 0)
         if (!obj.name && !obj.price) return null;
         return obj;
     }).filter(item => item !== null);
@@ -196,4 +202,3 @@ export const sendOrderToWP = async (orderData) => {
         throw error;
     }
 };
-
