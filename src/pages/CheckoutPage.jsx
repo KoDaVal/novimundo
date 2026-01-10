@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { sendOrderToWP } from '../services/dataService';
-import { ChevronRight, MapPin, CreditCard, Wallet, AlertTriangle, Loader, CheckCircle, Lock } from 'lucide-react';
+import { ChevronRight, MapPin, CreditCard, Wallet, AlertTriangle, CheckCircle, Lock } from 'lucide-react';
+// Nota: Quité 'Loader' de los imports porque ya no usaremos el icono giratorio
 
 const CheckoutPage = () => {
     const { cart, cartTotal, setIsCartOpen, clearCart } = useCart();
@@ -24,11 +25,13 @@ const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState('bacs');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    
+    // --- NUEVO ESTADO PARA LA BARRA DE PROGRESO ---
+    const [progress, setProgress] = useState(0);
 
     // --- LÓGICA DE CÓDIGOS POSTALES ---
-    const [isPostcodeValid, setIsPostcodeValid] = useState(true); // Asumimos válido al inicio hasta que escriban
+    const [isPostcodeValid, setIsPostcodeValid] = useState(true); 
     
-    // Lista de CPs permitidos (como números o strings para comparar fácil)
     const ALLOWED_POSTCODES = [
         "30500", "30503", "30507", "30509", "30513", "30515", 
         "30560", "30563", "30564", 
@@ -39,10 +42,8 @@ const CheckoutPage = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
 
-        // Validación en tiempo real del CP
         if (name === 'postcode') {
             const cleanCode = value.trim();
-            // Si está vacío no mostramos error, pero si tiene 5 dígitos validamos
             if (cleanCode.length === 5) {
                 if (ALLOWED_POSTCODES.includes(cleanCode)) {
                     setIsPostcodeValid(true);
@@ -50,8 +51,6 @@ const CheckoutPage = () => {
                     setIsPostcodeValid(false);
                 }
             } else {
-                // Mientras escribe o si borra, reseteamos a válido para no molestar,
-                // pero el 'required' del form evitará enviar si está vacío.
                 setIsPostcodeValid(true); 
             }
         }
@@ -60,7 +59,6 @@ const CheckoutPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Doble validación al enviar por si acaso
         if (!ALLOWED_POSTCODES.includes(formData.postcode.trim())) {
             setIsPostcodeValid(false);
             setErrorMsg("Lo sentimos, no tenemos cobertura en este Código Postal.");
@@ -69,12 +67,22 @@ const CheckoutPage = () => {
 
         setIsSubmitting(true);
         setErrorMsg('');
+        setProgress(10); // Inicia la barra al 10% inmediatamente
+
+        // --- SIMULACIÓN DE PROGRESO ---
+        // Esto hace que la barra avance visualmente mientras esperamos al servidor
+        const progressInterval = setInterval(() => {
+            setProgress((prev) => {
+                // Si llega a 90%, se queda ahí esperando a que termine la petición real
+                if (prev >= 90) return 90;
+                return prev + 10; // Sube 10% cada 400ms
+            });
+        }, 400);
 
         const orderPayload = {
             payment_method: paymentMethod,
             payment_method_title: 'Transferencia / Mercado Pago',
             set_paid: false,
-            
             billing: { 
                 first_name: formData.firstName,
                 last_name: formData.lastName,
@@ -86,7 +94,6 @@ const CheckoutPage = () => {
                 email: formData.email,
                 phone: formData.phone
             },
-            
             shipping: { 
                 first_name: formData.firstName,
                 last_name: formData.lastName,
@@ -96,31 +103,38 @@ const CheckoutPage = () => {
                 postcode: formData.postcode,
                 country: 'MX'
             },
-            
             line_items: cart.map(item => ({ 
                 product_id: item.id, 
-                quantity: item.qty,
+                quantity: item.qty, 
                 name: item.name,
                 price: item.price
             })),
-            
             customer_note: formData.note
         };
 
         try {
             const result = await sendOrderToWP(orderPayload);
             
-            if (result.payment_url) { 
-                window.location.href = result.payment_url; 
-            } else { 
-                clearCart(); 
-                navigate('/order-success', { state: { orderId: result.id, orderKey: result.order_key } }); 
-            }
+            // ¡Éxito! Completamos la barra
+            clearInterval(progressInterval);
+            setProgress(100);
+
+            // Damos un pequeño delay (500ms) para que el usuario vea la barra llena antes de redirigir
+            setTimeout(() => {
+                if (result.payment_url) { 
+                    window.location.href = result.payment_url; 
+                } else { 
+                    clearCart(); 
+                    navigate('/order-success', { state: { orderId: result.id, orderKey: result.order_key } }); 
+                }
+            }, 500);
+
         } catch (err) { 
             console.error(err); 
+            clearInterval(progressInterval); // Detenemos la animación
+            setProgress(0); // Reseteamos la barra
             setErrorMsg("Error al procesar el pedido. Intenta nuevamente."); 
-        } finally { 
-            setIsSubmitting(false); 
+            setIsSubmitting(false); // Reactivamos el botón
         }
     };
 
@@ -150,13 +164,13 @@ const CheckoutPage = () => {
                             <input required name="state" onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="Estado" />
                         </div>
                         
-                        {/* INPUT DE CÓDIGO POSTAL CON VALIDACIÓN VISUAL */}
+                        {/* INPUT DE CÓDIGO POSTAL */}
                         <div>
                             <input 
                                 required 
                                 name="postcode" 
                                 onChange={handleChange} 
-                                maxLength="5" // Limitamos a 5 caracteres
+                                maxLength="5"
                                 className={`w-full p-3 border rounded-lg ${!isPostcodeValid ? 'border-red-500 bg-red-50' : ''}`} 
                                 placeholder="Código Postal (Solo cobertura local)" 
                             />
@@ -178,7 +192,6 @@ const CheckoutPage = () => {
                         <CreditCard className="text-noviblue" /> Método de Pago
                     </h2>
                     
-                    {/* SOLO UNA OPCIÓN DE PAGO DISPONIBLE AHORA */}
                     <div className="space-y-3">
                          <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer border-noviblue bg-blue-50`}>
                             <input type="radio" name="payment" value="bacs" checked={true} readOnly className="accent-noviblue" />
@@ -213,20 +226,43 @@ const CheckoutPage = () => {
                             <span>${cartTotal.toLocaleString()}</span>
                         </div>
 
-                        {/* EL BOTÓN SE DESACTIVA SI EL CP NO ES VÁLIDO */}
+                        {/* ========================================================= */}
+                        {/* BOTÓN CON EFECTO DE BARRA DE CARGA */}
+                        {/* ========================================================= */}
                         <button 
                             type="submit" 
                             form="checkout-form" 
                             disabled={isSubmitting || !isPostcodeValid} 
-                            className={`w-full font-extrabold py-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
+                            // Agregamos 'relative' y 'overflow-hidden' para contener la barra
+                            className={`w-full relative overflow-hidden font-extrabold py-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
                                 !isPostcodeValid 
                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                                 : 'bg-noviyellow text-gray-900 hover:bg-yellow-400'
                             }`}
                         >
-                            {isSubmitting ? <Loader className="animate-spin" /> : <CheckCircle />} 
-                            {isPostcodeValid ? 'CONFIRMAR PEDIDO' : 'SIN COBERTURA'}
+                            {/* LA BARRA DE CARGA (Fondo Oscuro Transparente) */}
+                            {isSubmitting && (
+                                <div 
+                                    className="absolute left-0 top-0 h-full bg-black/20 transition-all duration-300 ease-out" 
+                                    style={{ width: `${progress}%` }}
+                                ></div>
+                            )}
+
+                            {/* EL TEXTO Y EL ÍCONO (Z-Index para estar encima de la barra) */}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {isSubmitting ? (
+                                    // Texto mientras carga
+                                    <span>PROCESANDO... {progress}%</span>
+                                ) : (
+                                    // Texto normal
+                                    <>
+                                        <CheckCircle size={20} />
+                                        {isPostcodeValid ? 'CONFIRMAR PEDIDO' : 'SIN COBERTURA'}
+                                    </>
+                                )}
+                            </span>
                         </button>
+                        {/* ========================================================= */}
 
                         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
                              <Lock size={12}/> Pagos procesados de forma segura
