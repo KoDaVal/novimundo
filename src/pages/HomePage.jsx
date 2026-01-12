@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
-import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Plug } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Plug, CheckCircle } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  // 1. CAMBIO: Traemos 'cart' para verificar qué productos ya tiene el usuario
+  const { addToCart, cart } = useCart();
   const { bestSellers, loading } = useProducts();
-   
+    
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState([]);
 
   // 1. TUS BANNERS POR DEFECTO (Se muestran si el Excel está vacío)
   const defaultSlides = [
     { id: 1, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1920&q=80", link: "/ofertas" },
-    { id: 2, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1920&q=80", link: "/categoria/muebles" },
+    // 2. CAMBIO: Corregido el enlace de muebles a electrodomésticos
+    { id: 2, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1920&q=80", link: "/categoria/electrodomesticos" },
     { id: 3, image: "https://images.unsplash.com/photo-1505693416388-b0346efee539?auto=format&fit=crop&w=1920&q=80", link: "/categoria/colchones" }
   ];
 
@@ -26,15 +28,15 @@ const HomePage = () => {
             // Tu link CSV específico para la sección de banners
             const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=100796148&single=true&output=csv');
             const text = await response.text();
-            
+             
             // Rompemos el texto por líneas (filas) y saltamos la primera (encabezados)
             const rows = text.split('\n').slice(1);
-            
+             
             const loadedSlides = rows.map((row, index) => {
                 // Separamos por comas
                 const columns = row.split(',');
                 if (columns.length < 1) return null;
-                
+                 
                 // Limpiamos comillas que Google a veces pone y espacios extra
                 // Columna A (0) = Imagen, Columna B (1) = Redirección
                 const image = columns[0]?.trim().replace(/^"|"$/g, '');
@@ -81,17 +83,25 @@ const HomePage = () => {
     <div className="animate-fade-in-down">
       
       {/* CARRUSEL DINÁMICO */}
-      <section className="relative bg-gray-900 overflow-hidden h-[300px] sm:h-[400px] md:h-[500px]">
+      {/* 3. CAMBIO: 'h-auto' en móvil para que la imagen mande en altura y no se recorte */}
+      <section className="relative bg-gray-900 overflow-hidden w-full h-auto sm:h-[400px] md:h-[500px]">
         {activeSlides.map((slide, index) => (
           <div 
             key={slide.id} 
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+            // Nota: En móvil, como usamos h-auto, necesitamos que el slide activo tenga posición relativa para empujar el contenido
+            style={{ position: index === currentSlide && window.innerWidth < 640 ? 'relative' : 'absolute' }}
             onClick={() => {
                 if(slide.link) navigate(slide.link);
             }}
           >
-            <img src={slide.image} alt="Oferta Novimundo" className="w-full h-full object-cover"/>
-            {/* Si es un slide por defecto y tiene título, lo mostramos, si viene del Excel (que no tiene titulo en el objeto) solo mostramos la imagen limpia */}
+            {/* 4. CAMBIO: object-contain en móvil para ver la imagen completa */}
+            <img 
+                src={slide.image} 
+                alt="Oferta Novimundo" 
+                className="w-full h-auto sm:h-full object-contain sm:object-cover"
+            />
+            
             {slide.title && (
                  <div className="absolute inset-0 z-20 flex flex-col justify-center items-center text-center px-4 md:px-20 bg-black/30">
                     <h2 className={`text-3xl md:text-6xl font-extrabold mb-4 drop-shadow-lg ${slide.color || 'text-white'}`}>{slide.title}</h2>
@@ -137,35 +147,49 @@ const HomePage = () => {
         {loading ? ( <div className="flex justify-center items-center h-64"><Loader size={40} className="animate-spin text-noviblue" /><span className="ml-3 text-gray-500 font-medium">Cargando destacados...</span></div> ) : 
           bestSellers.length === 0 ? ( <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-500 border border-gray-100"><PackageOpen size={48} className="mx-auto mb-3 text-gray-300" /><p>No hay productos destacados.</p></div> ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {bestSellers.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
-                <div className="relative h-64 overflow-hidden bg-white p-6 flex items-center justify-center">
-                  {product.tag && (<span className={`absolute top-4 left-4 ${product.tagColor || 'bg-noviblue'} text-white text-[10px] font-bold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-wider`}>{product.tag}</span>)}
-                  <button className="absolute top-4 right-4 bg-gray-50 p-2 rounded-full text-gray-400 hover:text-novired hover:bg-red-50 transition-colors z-10"><Heart size={18} /></button>
-                  <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/200?text=Sin+Imagen'}/>
-                  
-                  {/* AQUÍ ESTÁ EL CAMBIO PARA STOCK 🚦 */}
-                  <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-white via-white to-transparent">
-                    {product.inStock ? (
-                        <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-noviblue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-sky-600 transition-colors flex items-center justify-center gap-2 text-sm">
-                            <ShoppingCart size={16} /> Agregar
-                        </button>
-                    ) : (
-                        <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-lg shadow-none cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                            <ShoppingCart size={16} /> Agotado
-                        </button>
-                    )}
-                  </div>
+            {bestSellers.map((product) => {
+              // 5. CAMBIO: Lógica para saber si el producto ya está en el carrito
+              const isInCart = cart.some(item => item.id === product.id);
 
+              return (
+                <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
+                    <div className="relative h-64 overflow-hidden bg-white p-6 flex items-center justify-center">
+                    {product.tag && (<span className={`absolute top-4 left-4 ${product.tagColor || 'bg-noviblue'} text-white text-[10px] font-bold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-wider`}>{product.tag}</span>)}
+                    <button className="absolute top-4 right-4 bg-gray-50 p-2 rounded-full text-gray-400 hover:text-novired hover:bg-red-50 transition-colors z-10"><Heart size={18} /></button>
+                    <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/200?text=Sin+Imagen'}/>
+                    
+                    {/* BOTÓN DE COMPRA */}
+                    <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-white via-white to-transparent">
+                        {product.inStock ? (
+                            isInCart ? (
+                                // Opción A: Ya está en el carrito -> Botón deshabilitado
+                                <button disabled className="w-full bg-green-100 text-green-700 font-bold py-3 rounded-lg shadow-none flex items-center justify-center gap-2 text-sm cursor-default">
+                                    <CheckCircle size={16} /> En el Carrito
+                                </button>
+                            ) : (
+                                // Opción B: No está en el carrito -> Botón normal
+                                <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-noviblue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-sky-600 transition-colors flex items-center justify-center gap-2 text-sm">
+                                    <ShoppingCart size={16} /> Agregar
+                                </button>
+                            )
+                        ) : (
+                            // Opción C: Agotado
+                            <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-lg shadow-none cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                                <ShoppingCart size={16} /> Agotado
+                            </button>
+                        )}
+                    </div>
+
+                    </div>
+                    <div className="p-5">
+                    <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">{product.category}</p>
+                    <h3 className="font-bold text-base text-gray-800 mb-2 leading-tight group-hover:text-noviblue transition-colors line-clamp-2 min-h-[2.5em]">{product.name}</h3>
+                    <div className="flex items-center mb-3">{[...Array(5)].map((_, i) => (<Star key={i} size={12} className={i < product.rating ? "text-noviyellow fill-current" : "text-gray-200"} />))}</div>
+                    <div className="flex items-center justify-between mt-auto"><span className="text-xl font-extrabold text-gray-900">${product.price.toLocaleString()}</span></div>
+                    </div>
                 </div>
-                <div className="p-5">
-                  <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">{product.category}</p>
-                  <h3 className="font-bold text-base text-gray-800 mb-2 leading-tight group-hover:text-noviblue transition-colors line-clamp-2 min-h-[2.5em]">{product.name}</h3>
-                  <div className="flex items-center mb-3">{[...Array(5)].map((_, i) => (<Star key={i} size={12} className={i < product.rating ? "text-noviyellow fill-current" : "text-gray-200"} />))}</div>
-                  <div className="flex items-center justify-between mt-auto"><span className="text-xl font-extrabold text-gray-900">${product.price.toLocaleString()}</span></div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -178,5 +202,4 @@ const HomePage = () => {
   );
 };
 export default HomePage;
-
 
