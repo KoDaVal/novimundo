@@ -3,67 +3,91 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Plug, CheckCircle } from 'lucide-react';
+// IMPORTANTE: SEO
 import { Helmet } from 'react-helmet-async';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  // 1. CAMBIO: Traemos 'cart' para verificar qué productos ya tiene el usuario
   const { addToCart, cart } = useCart();
   const { bestSellers, loading } = useProducts();
-    
+   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState([]);
 
-  // 1. TUS BANNERS POR DEFECTO (Se muestran si el Excel está vacío)
+  // --- DATOS PARA GOOGLE (SEO MULTI-SUCURSAL) ---
+  const multiLocationSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "FurnitureStore",
+        "name": "Novimundo Tonalá (Matriz)",
+        "image": "https://novimundo.netlify.app/logo.png",
+        "description": "Mueblería y electrónica en el centro de Tonalá.",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Av. Rayon Esq 15 de Febrero, Col. Centro",
+          "addressLocality": "Tonalá",
+          "addressRegion": "Chiapas",
+          "postalCode": "30500",
+          "addressCountry": "MX"
+        },
+        "telephone": "+529666631003",
+        "priceRange": "$$"
+      },
+      {
+        "@type": "FurnitureStore",
+        "name": "Novimundo Mapastepec",
+        "description": "La mejor tienda de línea blanca y muebles en Mapastepec.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mapastepec",
+          "addressRegion": "Chiapas",
+          "addressCountry": "MX"
+        },
+        "priceRange": "$$"
+      },
+      {
+        "@type": "FurnitureStore",
+        "name": "Novimundo Escuintla",
+        "description": "Electrodomésticos y colchones a crédito en Escuintla.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Escuintla",
+          "addressRegion": "Chiapas",
+          "addressCountry": "MX"
+        },
+        "priceRange": "$$"
+      }
+    ]
+  };
+
   const defaultSlides = [
     { id: 1, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1920&q=80", link: "/ofertas" },
-    // 2. CAMBIO: Corregido el enlace de muebles a electrodomésticos
     { id: 2, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1920&q=80", link: "/categoria/electrodomesticos" },
     { id: 3, image: "https://images.unsplash.com/photo-1505693416388-b0346efee539?auto=format&fit=crop&w=1920&q=80", link: "/categoria/colchones" }
   ];
 
-  // 2. FETCH PARA LEER TU NUEVA HOJA DE BANNERS
+  // FETCH BANNERS
   useEffect(() => {
     const fetchBanners = async () => {
         try {
-            // Tu link CSV específico para la sección de banners
             const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vReghg6xM6cC5_C3w4ZqkgImVW8lrreL3Oo8c3onylbpDROhRTHldO4OZuN27EKBmkmRjlejhAD2tey/pub?gid=100796148&single=true&output=csv');
             const text = await response.text();
-             
-            // Rompemos el texto por líneas (filas) y saltamos la primera (encabezados)
             const rows = text.split('\n').slice(1);
-             
             const loadedSlides = rows.map((row, index) => {
-                // Separamos por comas
                 const columns = row.split(',');
                 if (columns.length < 1) return null;
-                 
-                // Limpiamos comillas que Google a veces pone y espacios extra
-                // Columna A (0) = Imagen, Columna B (1) = Redirección
                 const image = columns[0]?.trim().replace(/^"|"$/g, '');
                 const link = columns[1]?.trim().replace(/^"|"$/g, '');
-
-                if (!image) return null; // Si no hay imagen, ignoramos la fila
-
-                return {
-                    id: `banner-${index}`,
-                    image: image,
-                    link: link || '' // Si no hay link, lo deja vacío (no redirige)
-                };
-            }).filter(Boolean); // Filtramos los nulos
-
-            if (loadedSlides.length > 0) {
-                setBannerSlides(loadedSlides);
-            }
-        } catch (error) {
-            console.error("No se pudieron cargar los banners del Excel, usando defecto.", error);
-        }
+                if (!image) return null; 
+                return { id: `banner-${index}`, image: image, link: link || '' };
+            }).filter(Boolean);
+            if (loadedSlides.length > 0) setBannerSlides(loadedSlides);
+        } catch (error) { console.error("Error banners", error); }
     };
-
     fetchBanners();
   }, []);
 
-  // 3. DECISIÓN: ¿Usamos los del Excel o los Default?
   const activeSlides = bannerSlides.length > 0 ? bannerSlides : defaultSlides;
 
   const categories = [
@@ -82,32 +106,31 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in-down">
-      {/* --- PEGAR ESTO JUSTO DESPUÉS DEL DIV --- */}
-      <Helmet>
-        <title>Novimundo | Muebles, Línea Blanca y Electrónica en Chiapas</title>
-        <meta name="description" content="Tienda en línea de Novimundo. Encuentra las mejores ofertas en refrigeradores, estufas, celulares y muebles. Envíos en Tonalá y todo Chiapas." />
-        <meta name="keywords" content="muebles, linea blanca, estufas, refrigeradores, tonalá, chiapas, novimundo, ofertas" />
-      </Helmet>
-      {/* ----------------------------------------- */}
       
-      {/* CARRUSEL DINÁMICO */}
-      {/* 3. CAMBIO: 'h-auto' en móvil para que la imagen mande en altura y no se recorte */}
-      <section className="relative bg-gray-900 overflow-hidden w-full h-auto sm:h-[400px] md:h-[500px]">
+      {/* --- SEO POTENTE PARA TODA LA COSTA --- */}
+      <Helmet>
+        <title>Mueblería en Tonalá, Mapastepec y Escuintla | Novimundo</title>
+        <meta name="description" content="Novimundo: Tu cadena de muebles y electrónica líder en la Costa de Chiapas. Sucursales en Tonalá, Mapastepec y Escuintla. Envíos gratis y crédito fácil." />
+        <meta name="keywords" content="muebleria tonala, muebleria mapastepec, muebleria escuintla, refrigeradores chiapas, linea blanca, novimundo" />
+        <script type="application/ld+json">
+          {JSON.stringify(multiLocationSchema)}
+        </script>
+      </Helmet>
+
+      {/* CARRUSEL MEJORADO (Altura fija + Imagen rellena) */}
+      {/* Altura: 250px en móvil, 400px en tablet, 500px en PC */}
+      <section className="relative bg-gray-900 overflow-hidden w-full h-[250px] sm:h-[400px] md:h-[500px]">
         {activeSlides.map((slide, index) => (
           <div 
             key={slide.id} 
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            // Nota: En móvil, como usamos h-auto, necesitamos que el slide activo tenga posición relativa para empujar el contenido
-            style={{ position: index === currentSlide && window.innerWidth < 640 ? 'relative' : 'absolute' }}
-            onClick={() => {
-                if(slide.link) navigate(slide.link);
-            }}
+            onClick={() => { if(slide.link) navigate(slide.link); }}
           >
-            {/* 4. CAMBIO: object-contain en móvil para ver la imagen completa */}
+            {/* AQUÍ ESTÁ EL CAMBIO: object-cover fuerza a llenar el espacio (recorta si es necesario) */}
             <img 
                 src={slide.image} 
                 alt="Oferta Novimundo" 
-                className="w-full h-auto sm:h-full object-contain sm:object-cover"
+                className="w-full h-full object-cover"
             />
             
             {slide.title && (
@@ -119,7 +142,6 @@ const HomePage = () => {
             )}
           </div>
         ))}
-
         {activeSlides.length > 1 && (
           <>
             <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === 0 ? activeSlides.length - 1 : prev - 1)); }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all"><ChevronLeft size={32} /></button>
@@ -170,18 +192,15 @@ const HomePage = () => {
                     <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-white via-white to-transparent">
                         {product.inStock ? (
                             isInCart ? (
-                                // Opción A: Ya está en el carrito -> Botón deshabilitado
                                 <button disabled className="w-full bg-green-100 text-green-700 font-bold py-3 rounded-lg shadow-none flex items-center justify-center gap-2 text-sm cursor-default">
                                     <CheckCircle size={16} /> En el Carrito
                                 </button>
                             ) : (
-                                // Opción B: No está en el carrito -> Botón normal
                                 <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="w-full bg-noviblue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-sky-600 transition-colors flex items-center justify-center gap-2 text-sm">
                                     <ShoppingCart size={16} /> Agregar
                                 </button>
                             )
                         ) : (
-                            // Opción C: Agotado
                             <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-lg shadow-none cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                                 <ShoppingCart size={16} /> Agotado
                             </button>
@@ -210,5 +229,3 @@ const HomePage = () => {
   );
 };
 export default HomePage;
-
-
