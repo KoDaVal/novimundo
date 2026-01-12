@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { ChevronLeft, ChevronRight, Heart, ShoppingCart, Star, Loader, PackageOpen, Award, ShieldCheck, Lock, Snowflake, Headphones, Laptop, BedDouble, Plug, CheckCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -81,6 +82,13 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in-down">
+      {/* --- PEGAR ESTO JUSTO DESPUÉS DEL DIV --- */}
+      <Helmet>
+        <title>Novimundo | Muebles, Línea Blanca y Electrónica en Chiapas</title>
+        <meta name="description" content="Tienda en línea de Novimundo. Encuentra las mejores ofertas en refrigeradores, estufas, celulares y muebles. Envíos en Tonalá y todo Chiapas." />
+        <meta name="keywords" content="muebles, linea blanca, estufas, refrigeradores, tonalá, chiapas, novimundo, ofertas" />
+      </Helmet>
+      {/* ----------------------------------------- */}
       
       {/* CARRUSEL DINÁMICO */}
       {/* 3. CAMBIO: 'h-auto' en móvil para que la imagen mande en altura y no se recorte */}
@@ -202,4 +210,5 @@ const HomePage = () => {
   );
 };
 export default HomePage;
+
 
