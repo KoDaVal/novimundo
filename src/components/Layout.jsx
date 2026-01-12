@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext'; // Importar Contexto de Productos
 import { 
   ShoppingCart, Search, Menu, User, Heart, Star, ChevronRight, ChevronDown, 
-  Snowflake, Headphones, Laptop, BedDouble, Armchair, MapPin, Phone, HelpCircle 
+  Snowflake, Headphones, Laptop, Lamp, BedDouble, Armchair, MapPin, Phone, HelpCircle 
 } from 'lucide-react';
 
 import MobileMenu from './MobileMenu'; 
@@ -28,7 +28,7 @@ const Layout = () => {
     { name: 'Audio', icon: <Headphones size={20} />, slug: 'audio' }, 
     { name: 'Electrónicos', icon: <Laptop size={20} />, slug: 'electronicos' }, 
     { name: 'Colchones', icon: <BedDouble size={20} />, slug: 'colchones' }, 
-    { name: 'Muebles', icon: <Armchair size={20} />, slug: 'muebles' }
+    { name: 'Electrodomésticos', icon: <Lamp size={20} />, slug: 'electrodomesticos' }
   ];
 
   const goHome = () => navigate('/');
