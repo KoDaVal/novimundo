@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext'; // Importar Contexto
 import { Star, CreditCard, Truck, ShieldCheck, ShoppingCart, ChevronRight, Ban, CheckCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -32,6 +33,14 @@ const ProductPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in-down font-montserrat bg-white">
+      {/* --- PEGAR ESTO AL INICIO DEL RETURN --- */}
+      <Helmet>
+        <title>{`${product.name} | Novimundo`}</title>
+        <meta name="description" content={`Compra ${product.name} a buen precio. Marca: ${product.brand}. Disponible en Novimundo Chiapas.`} />
+        <meta property="og:title" content={product.name} />
+        <meta property="og:image" content={product.image} />
+      </Helmet>
+      {/* --------------------------------------- */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium"><span onClick={() => navigate('/')} className="cursor-pointer hover:text-noviblue hover:underline">Inicio</span><ChevronRight size={14} /><span className="font-bold text-noviblue truncate">{product.name}</span></div>
         <div className="flex flex-col lg:flex-row gap-10">
             <div className="lg:w-3/5">
@@ -103,3 +112,4 @@ const ProductPage = () => {
   );
 };
 export default ProductPage;
+
