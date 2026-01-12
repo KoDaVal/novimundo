@@ -117,20 +117,21 @@ const HomePage = () => {
         </script>
       </Helmet>
 
-      {/* CARRUSEL MEJORADO (Altura fija + Imagen rellena) */}
-      {/* Altura: 250px en móvil, 400px en tablet, 500px en PC */}
-      <section className="relative bg-gray-900 overflow-hidden w-full h-[250px] sm:h-[400px] md:h-[500px]">
+      {/* CARRUSEL OPTIMIZADO */}
+      {/* 1. Usamos 'w-full' siempre. */}
+      {/* 2. Alturas: 'h-[200px]' en cel (para que no ocupe toda la pantalla), 'h-[550px]' en PC (para que se vea el detalle). */}
+      <section className="relative bg-gray-100 overflow-hidden w-full h-[200px] sm:h-[350px] md:h-[550px]">
         {activeSlides.map((slide, index) => (
           <div 
             key={slide.id} 
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             onClick={() => { if(slide.link) navigate(slide.link); }}
           >
-            {/* AQUÍ ESTÁ EL CAMBIO: object-cover fuerza a llenar el espacio (recorta si es necesario) */}
+            {/* 3. CAMBIO CLAVE: 'object-cover' llena el cuadro, 'object-center' asegura que el centro no se recorte. */}
             <img 
                 src={slide.image} 
                 alt="Oferta Novimundo" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
             />
             
             {slide.title && (
@@ -144,8 +145,8 @@ const HomePage = () => {
         ))}
         {activeSlides.length > 1 && (
           <>
-            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === 0 ? activeSlides.length - 1 : prev - 1)); }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all"><ChevronLeft size={32} /></button>
-            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === activeSlides.length - 1 ? 0 : prev + 1)); }} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all"><ChevronRight size={32} /></button>
+            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === 0 ? activeSlides.length - 1 : prev - 1)); }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 md:p-3 rounded-full backdrop-blur-sm transition-all"><ChevronLeft size={24} className="md:w-8 md:h-8" /></button>
+            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === activeSlides.length - 1 ? 0 : prev + 1)); }} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 md:p-3 rounded-full backdrop-blur-sm transition-all"><ChevronRight size={24} className="md:w-8 md:h-8" /></button>
           </>
         )}
       </section>
@@ -178,7 +179,7 @@ const HomePage = () => {
           bestSellers.length === 0 ? ( <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-500 border border-gray-100"><PackageOpen size={48} className="mx-auto mb-3 text-gray-300" /><p>No hay productos destacados.</p></div> ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {bestSellers.map((product) => {
-              // 5. CAMBIO: Lógica para saber si el producto ya está en el carrito
+              // Verificamos si está en carrito
               const isInCart = cart.some(item => item.id === product.id);
 
               return (
