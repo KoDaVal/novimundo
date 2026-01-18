@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'; // Eliminé useEffect si no se usa explícitamente
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
-// Agregamos 'ChevronDown' para la flecha personalizada del select
+// Agregamos 'Check' para marcar la opción seleccionada
 import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban, ChevronDown } from 'lucide-react'; 
 
 const CategoryPage = ({ isSearch = false, isOffers = false }) => {
@@ -17,8 +17,9 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const [selectedSubcats, setSelectedSubcats] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   
-  // Estado inicial 'default' (sin orden específico aún)
+  // --- ESTADOS PARA EL ORDENAMIENTO ---
   const [sortOrder, setSortOrder] = useState('default');
+  const [isSortOpen, setIsSortOpen] = useState(false); // Nuevo estado para abrir/cerrar menú
 
   const getPageTitle = () => {
       if (isSearch) return `Resultados para "${searchTerm}"`;
@@ -52,18 +53,24 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
       return true;
   });
 
-  // Lógica de ordenamiento (Solo precio)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
       if (sortOrder === 'asc') {
-          return a.price - b.price; // Menor a Mayor
+          return a.price - b.price; 
       } else if (sortOrder === 'desc') {
-          return b.price - a.price; // Mayor a Menor
+          return b.price - a.price; 
       }
       return 0; 
   });
 
   const toggleSubcat = (name) => setSelectedSubcats(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
   const toggleBrand = (name) => setSelectedBrands(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
+
+  // Helper para mostrar texto bonito en el botón
+  const getSortLabel = () => {
+      if (sortOrder === 'asc') return 'Precio: Menor a Mayor';
+      if (sortOrder === 'desc') return 'Precio: Mayor a Menor';
+      return 'Ordenar por precio'; // Texto por defecto
+  };
 
   if (loading) return <div className="p-20 text-center">Cargando productos...</div>;
 
@@ -91,6 +98,7 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                         <input type="number" value={priceRange.max} onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Max" />
                     </div>
                 </div>
+                {/* ... (Resto de filtros de Categoría y Marca igual que antes) ... */}
                 {dynamicSubcats.length > 0 && (
                     <div className="mb-8">
                         <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Categoría</h3>
@@ -121,31 +129,64 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <main className="flex-1 relative"> {/* Agregué relative por si acaso */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 z-20 relative">
                 <h1 className="text-2xl font-extrabold text-gray-900 uppercase">{getPageTitle()}</h1>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                     
-                    {/* --- SELECTOR DE ORDENAMIENTO ESTILIZADO --- */}
-                    <div className="relative group">
-                        <select 
-                            value={sortOrder} 
-                            onChange={(e) => setSortOrder(e.target.value)}
-                            className="appearance-none w-full sm:w-56 bg-white border border-gray-200 text-gray-700 text-sm font-semibold py-2.5 pl-4 pr-10 rounded-full shadow-sm cursor-pointer hover:border-noviblue focus:outline-none focus:ring-2 focus:ring-noviblue/20 transition-all"
+                    {/* --- DROPDOWN PERSONALIZADO (NO HTML NATIVO) --- */}
+                    <div className="relative">
+                        {/* El Botón (Trigger) */}
+                        <button 
+                            onClick={() => setIsSortOpen(!isSortOpen)}
+                            className={`flex items-center justify-between gap-3 w-full sm:w-60 px-4 py-2.5 bg-white border rounded-full text-sm font-semibold transition-all shadow-sm hover:border-noviblue hover:text-noviblue ${isSortOpen ? 'border-noviblue ring-2 ring-noviblue/20 text-noviblue' : 'border-gray-200 text-gray-700'}`}
                         >
-                            {/* Opción oculta que sirve de placeholder */}
-                            <option value="default" disabled hidden>Ordenar por precio</option> 
-                            <option value="asc">Precio: Menor a Mayor</option>
-                            <option value="desc">Precio: Mayor a Menor</option>
-                        </select>
-                        
-                        {/* Icono de flecha posicionado absolutamente para reemplazar el del navegador */}
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 group-hover:text-noviblue transition-colors">
-                            <ChevronDown size={16} strokeWidth={2.5} />
-                        </div>
+                            <span>{getSortLabel()}</span>
+                            <ChevronDown size={16} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {/* Backdrop para cerrar al hacer click afuera */}
+                        {isSortOpen && (
+                            <div className="fixed inset-0 z-30" onClick={() => setIsSortOpen(false)}></div>
+                        )}
+
+                        {/* El Menú Desplegable */}
+                        {isSortOpen && (
+                            <div className="absolute right-0 mt-2 w-full sm:w-60 bg-white rounded-xl shadow-xl border border-gray-100 z-40 overflow-hidden animate-fade-in-down">
+                                <ul className="py-1">
+                                    <li>
+                                        <button 
+                                            onClick={() => { setSortOrder('default'); setIsSortOpen(false); }}
+                                            className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${sortOrder === 'default' ? 'text-noviblue font-bold bg-blue-50/50' : 'text-gray-600'}`}
+                                        >
+                                            Relevancia (Defecto)
+                                            {sortOrder === 'default' && <Check size={16} />}
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button 
+                                            onClick={() => { setSortOrder('asc'); setIsSortOpen(false); }}
+                                            className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${sortOrder === 'asc' ? 'text-noviblue font-bold bg-blue-50/50' : 'text-gray-600'}`}
+                                        >
+                                            Precio: Menor a Mayor
+                                            {sortOrder === 'asc' && <Check size={16} />}
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button 
+                                            onClick={() => { setSortOrder('desc'); setIsSortOpen(false); }}
+                                            className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${sortOrder === 'desc' ? 'text-noviblue font-bold bg-blue-50/50' : 'text-gray-600'}`}
+                                        >
+                                            Precio: Mayor a Menor
+                                            {sortOrder === 'desc' && <Check size={16} />}
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
-                    {/* ------------------------------------------- */}
+                    {/* ----------------------------------------------- */}
 
                     <span className="text-sm text-gray-500 font-medium whitespace-nowrap hidden sm:inline-block">
                         {sortedProducts.length} Productos
@@ -153,8 +194,9 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                 </div>
             </div>
 
+            {/* PRODUCT GRID */}
             {sortedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 z-10 relative">
                     {sortedProducts.map((product) => (
                         <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
                              <div className="relative h-56 overflow-hidden p-4 bg-white">
