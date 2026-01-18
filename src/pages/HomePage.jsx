@@ -10,7 +10,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { addToCart, cart } = useCart();
   const { bestSellers, loading } = useProducts();
-   
+    
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState([]);
 
@@ -61,10 +61,10 @@ const HomePage = () => {
     ]
   };
 
+  // ✅ ÚNICO BANNER POR DEFECTO (Si falla la Google Sheet)
+  // Asegúrate de tener "bannerDefault.png" en la carpeta /public
   const defaultSlides = [
-    { id: 1, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1920&q=80", link: "/ofertas" },
-    { id: 2, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1920&q=80", link: "/categoria/electrodomesticos" },
-    { id: 3, image: "https://images.unsplash.com/photo-1505693416388-b0346efee539?auto=format&fit=crop&w=1920&q=80", link: "/categoria/colchones" }
+    { id: 1, image: "/bannerDefault.png", link: "" }
   ];
 
   // FETCH BANNERS
@@ -99,7 +99,9 @@ const HomePage = () => {
   ];
 
   useEffect(() => {
-    if (activeSlides.length === 0) return;
+    // Si solo hay un slide (el default), no necesitamos intervalo
+    if (activeSlides.length <= 1) return;
+    
     const timer = setInterval(() => setCurrentSlide(prev => (prev === activeSlides.length - 1 ? 0 : prev + 1)), 5000);
     return () => clearInterval(timer);
   }, [activeSlides]);
@@ -118,8 +120,6 @@ const HomePage = () => {
       </Helmet>
 
       {/* CARRUSEL OPTIMIZADO */}
-      {/* 1. Usamos 'w-full' siempre. */}
-      {/* 2. Alturas: 'h-[200px]' en cel (para que no ocupe toda la pantalla), 'h-[550px]' en PC (para que se vea el detalle). */}
       <section className="relative bg-gray-100 overflow-hidden w-full h-[200px] sm:h-[350px] md:h-[550px]">
         {activeSlides.map((slide, index) => (
           <div 
@@ -127,7 +127,6 @@ const HomePage = () => {
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             onClick={() => { if(slide.link) navigate(slide.link); }}
           >
-            {/* 3. CAMBIO CLAVE: 'object-cover' llena el cuadro, 'object-center' asegura que el centro no se recorte. */}
             <img 
                 src={slide.image} 
                 alt="Oferta Novimundo" 
@@ -143,6 +142,7 @@ const HomePage = () => {
             )}
           </div>
         ))}
+        {/* Solo mostramos flechas si hay más de 1 slide */}
         {activeSlides.length > 1 && (
           <>
             <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => (prev === 0 ? activeSlides.length - 1 : prev - 1)); }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 md:p-3 rounded-full backdrop-blur-sm transition-all"><ChevronLeft size={24} className="md:w-8 md:h-8" /></button>
