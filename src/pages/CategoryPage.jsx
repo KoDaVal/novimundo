@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useProducts } from '../context/ProductContext'; // Importar Contexto
-import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban } from 'lucide-react'; // Agregué 'Ban' para icono de bloqueado
+import { useProducts } from '../context/ProductContext';
+import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban, ArrowUpDown } from 'lucide-react'; // Importé ArrowUpDown opcional
 
 const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const { slug } = useParams();
@@ -10,11 +10,14 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const searchTerm = searchParams.get('q') || '';
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { products, loading } = useProducts(); // Usamos productos globales
+  const { products, loading } = useProducts();
 
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
   const [selectedSubcats, setSelectedSubcats] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  
+  // 1. ESTADO PARA EL ORDENAMIENTO
+  const [sortOrder, setSortOrder] = useState('default'); // 'default', 'asc', 'desc'
 
   const getPageTitle = () => {
       if (isSearch) return `Resultados para "${searchTerm}"`;
@@ -41,11 +44,22 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const dynamicSubcats = [...new Set(displayedProductsBase.map(p => p.subcategory).filter(Boolean))].sort();
   const dynamicBrands = [...new Set(displayedProductsBase.map(p => p.brand).filter(Boolean))].sort();
 
+  // Filtrado base (Precio rango, Categoría, Marca)
   const filteredProducts = displayedProductsBase.filter(prod => {
       if (prod.price < (priceRange.min || 0) || prod.price > (priceRange.max || 50000)) return false;
       if (selectedSubcats.length > 0 && !selectedSubcats.includes(prod.subcategory)) return false;
       if (selectedBrands.length > 0 && !selectedBrands.includes(prod.brand)) return false;
       return true;
+  });
+
+  // 2. LÓGICA DE ORDENAMIENTO (Se aplica SOBRE los productos ya filtrados)
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+      if (sortOrder === 'asc') {
+          return a.price - b.price; // Menor a Mayor
+      } else if (sortOrder === 'desc') {
+          return b.price - a.price; // Mayor a Menor
+      }
+      return 0; // Orden por defecto (como vengan de la base de datos o API)
   });
 
   const toggleSubcat = (name) => setSelectedSubcats(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
@@ -55,21 +69,92 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in-down font-montserrat">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium"><span onClick={() => navigate('/')} className="cursor-pointer hover:text-noviblue hover:underline">Inicio</span><ChevronRight size={14} /><span className="font-bold text-noviblue uppercase">{getPageTitle()}</span></div>
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
+          <span onClick={() => navigate('/')} className="cursor-pointer hover:text-noviblue hover:underline">Inicio</span>
+          <ChevronRight size={14} />
+          <span className="font-bold text-noviblue uppercase">{getPageTitle()}</span>
+      </div>
+      
       <div className="flex flex-col lg:flex-row gap-8">
+        {/* ASIDE - FILTROS LATERALES */}
         <aside className="w-full lg:w-1/4 shrink-0">
             <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm sticky top-28">
-                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100"><Filter size={20} className="text-noviblue" /><h2 className="font-bold text-gray-800 text-lg">Filtros</h2></div>
-                <div className="mb-8"><h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Precio</h3><div className="flex items-center gap-2 mb-4"><input type="number" value={priceRange.min} onChange={(e) => setPriceRange({...priceRange, min: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Min" /><span>-</span><input type="number" value={priceRange.max} onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Max" /></div></div>
-                {dynamicSubcats.length > 0 && (<div className="mb-8"><h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Categoría</h3><div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">{dynamicSubcats.map((sub, idx) => (<label key={idx} className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={selectedSubcats.includes(sub)} onChange={() => toggleSubcat(sub)} className="accent-noviblue"/><span className="text-sm text-gray-600">{sub}</span></label>))}</div></div>)}
-                {dynamicBrands.length > 0 && (<div className="mb-6"><h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Marcas</h3><div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">{dynamicBrands.map((brand, idx) => (<label key={idx} className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => toggleBrand(brand)} className="accent-noviblue"/><span className="text-sm text-gray-600">{brand}</span></label>))}</div></div>)}
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+                    <Filter size={20} className="text-noviblue" />
+                    <h2 className="font-bold text-gray-800 text-lg">Filtros</h2>
+                </div>
+                {/* Filtro Precio Rango */}
+                <div className="mb-8">
+                    <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Precio</h3>
+                    <div className="flex items-center gap-2 mb-4">
+                        <input type="number" value={priceRange.min} onChange={(e) => setPriceRange({...priceRange, min: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Min" />
+                        <span>-</span>
+                        <input type="number" value={priceRange.max} onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Max" />
+                    </div>
+                </div>
+                {/* Filtro Subcategorías */}
+                {dynamicSubcats.length > 0 && (
+                    <div className="mb-8">
+                        <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Categoría</h3>
+                        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                            {dynamicSubcats.map((sub, idx) => (
+                                <label key={idx} className="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked={selectedSubcats.includes(sub)} onChange={() => toggleSubcat(sub)} className="accent-noviblue"/>
+                                    <span className="text-sm text-gray-600">{sub}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {/* Filtro Marcas */}
+                {dynamicBrands.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Marcas</h3>
+                        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                            {dynamicBrands.map((brand, idx) => (
+                                <label key={idx} className="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => toggleBrand(brand)} className="accent-noviblue"/>
+                                    <span className="text-sm text-gray-600">{brand}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </aside>
+
+        {/* MAIN CONTENT */}
         <main className="flex-1">
-            <div className="flex justify-between items-center mb-6"><h1 className="text-2xl font-extrabold text-gray-900 uppercase">{getPageTitle()}</h1><span className="text-sm text-gray-500 font-medium">{filteredProducts.length} Productos</span></div>
-            {filteredProducts.length > 0 ? (
+            {/* ENCABEZADO DE RESULTADOS Y ORDENAMIENTO */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h1 className="text-2xl font-extrabold text-gray-900 uppercase">{getPageTitle()}</h1>
+                
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    {/* 3. INTERFAZ: SELECTOR DE ORDENAMIENTO */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 hidden sm:block">Ordenar por:</span>
+                        <select 
+                            value={sortOrder} 
+                            onChange={(e) => setSortOrder(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-noviblue cursor-pointer bg-white"
+                        >
+                            <option value="default">Relevancia</option>
+                            <option value="asc">Precio: Menor a Mayor</option>
+                            <option value="desc">Precio: Mayor a Menor</option>
+                        </select>
+                    </div>
+
+                    <span className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                        {sortedProducts.length} Productos
+                    </span>
+                </div>
+            </div>
+
+            {/* PRODUCT GRID */}
+            {sortedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredProducts.map((product) => (
+                    {/* IMPORTANTE: Mapeamos sortedProducts en lugar de filteredProducts */}
+                    {sortedProducts.map((product) => (
                         <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
                              <div className="relative h-56 overflow-hidden p-4 bg-white">
                                 {product.tag && (<span className="absolute top-3 left-3 bg-noviblue text-white text-[10px] font-bold px-3 py-1 rounded-sm shadow-sm uppercase">{product.tag}</span>)}
@@ -81,7 +166,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                                 <div className="mt-auto flex items-center justify-between">
                                     <span className="text-lg font-extrabold text-gray-900">{product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: product.price % 1 === 0 ? 0 : 2 })}</span>
                                     
-                                    {/* 🚦 LÓGICA DE STOCK AQUÍ 🚦 */}
                                     {product.inStock ? (
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }} 
@@ -96,7 +180,7 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                                             className="p-2 bg-gray-100 rounded-full text-gray-400 cursor-not-allowed"
                                             title="Agotado"
                                         >
-                                            <Ban size={16} /> {/* Icono de prohibido */}
+                                            <Ban size={16} />
                                         </button>
                                     )}
 
@@ -106,11 +190,17 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 min-h-[400px] flex flex-col items-center justify-center p-10 text-center"><PackageOpen size={64} className="text-gray-300 mb-4" /><h3 className="text-xl font-bold text-gray-800">Sin Productos</h3><p className="text-gray-500">No encontramos productos que coincidan.</p></div>
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 min-h-[400px] flex flex-col items-center justify-center p-10 text-center">
+                    <PackageOpen size={64} className="text-gray-300 mb-4" />
+                    <h3 className="text-xl font-bold text-gray-800">Sin Productos</h3>
+                    <p className="text-gray-500">No encontramos productos que coincidan.</p>
+                </div>
             )}
         </main>
       </div>
     </div>
   );
 };
+
 export default CategoryPage;
+
