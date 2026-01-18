@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useProducts } from '../context/ProductContext'; // Importar Contexto de Productos
+import { useProducts } from '../context/ProductContext';
 import { 
-  ShoppingCart, Search, Menu, User, Heart, Star, ChevronRight, ChevronDown, 
-  Snowflake, Headphones, Laptop, Lamp, BedDouble, Armchair, MapPin, Phone, HelpCircle 
+  ShoppingCart, Search, Menu, Heart, Star, ChevronRight, ChevronDown, 
+  Snowflake, Headphones, Laptop, Lamp, BedDouble 
 } from 'lucide-react';
 
 import MobileMenu from './MobileMenu'; 
@@ -13,7 +13,7 @@ import Logo from './Logo';
 
 const Layout = () => {
   const { isCartOpen, setIsCartOpen, cart, removeFromCart, updateQty, cartCount } = useCart();
-  const { products } = useProducts(); // Accedemos a los productos globales
+  const { products } = useProducts(); 
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -64,6 +64,10 @@ const Layout = () => {
       if (searchTerm.trim() === '') return;
       navigate(`/buscar?q=${searchTerm}`);
       setShowSuggestions(false);
+      // Cerrar teclado en móvil
+      if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+      }
   };
 
   const goToProduct = (product) => { 
@@ -95,6 +99,8 @@ const Layout = () => {
           <div className="h-full flex-shrink-0 flex items-center justify-start z-50">
               <Logo onClick={goHome} />
           </div>
+          
+          {/* BUSCADOR DESKTOP */}
           <div className="flex-1 px-4 hidden md:flex items-center justify-center max-w-3xl mx-auto ml-4">
             <div className="relative w-full">
               <input 
@@ -120,8 +126,10 @@ const Layout = () => {
               )}
             </div>
           </div>
+
           <div className="flex items-center gap-4 sm:gap-6 h-full text-white flex-shrink-0">
-            <button className="hidden md:flex flex-col items-center hover:text-noviyellow transition duration-300 group"><User size={26} className="group-hover:scale-110 transition-transform" /><span className="text-[10px] font-bold mt-1 uppercase tracking-wide">Cuenta</span></button>
+            {/* SECCIÓN DE CUENTA ELIMINADA */}
+            
             <button className="hidden md:flex flex-col items-center hover:text-noviyellow transition duration-300 group"><Heart size={26} className="group-hover:scale-110 transition-transform" /><span className="text-[10px] font-bold mt-1 uppercase tracking-wide">Favoritos</span></button>
             <button onClick={() => setIsCartOpen(true)} className="relative flex flex-col items-center hover:text-noviyellow transition duration-300 mr-1 group">
               <ShoppingCart size={30} strokeWidth={2} className="group-hover:scale-110 transition-transform" />
@@ -131,6 +139,7 @@ const Layout = () => {
             <button className="md:hidden text-white ml-2" onClick={() => setIsMenuOpen(true)}><Menu size={32} /></button>
           </div>
         </header>
+
         <nav className="bg-gray-100 border-b border-gray-200 hidden md:block z-40 relative">
           <div className="container mx-auto px-4">
             <div className="flex justify-between items-center h-12">
@@ -144,7 +153,7 @@ const Layout = () => {
                </div>
                <ul className="flex items-center gap-6 text-xs font-bold text-gray-600 tracking-wider uppercase">
                   <li className="cursor-pointer hover:text-noviblue transition" onClick={() => navigate('/sucursales')}>Tiendas</li>
-                  <li className="cursor-pointer hover:text-noviblue transition">Ayuda</li>
+                  <li className="cursor-pointer hover:text-noviblue transition" onClick={() => navigate('/ayuda')}>Ayuda</li>
                   <li onClick={() => navigate('/ofertas')} className="text-novired hover:text-red-700 cursor-pointer font-extrabold flex items-center gap-1 text-sm"><Star size={16} fill="currentColor"/> OFERTAS DEL DÍA</li>
                </ul>
             </div>
@@ -152,13 +161,29 @@ const Layout = () => {
         </nav>
       </div>
 
+      {/* BUSCADOR MÓVIL (ACTIVADO) */}
       <div className="md:hidden bg-noviblue pb-4 px-4 shadow-md sticky top-24 z-40">
-        <div className="relative w-full"><input type="text" placeholder="Buscar muebles..." className="w-full py-2 pl-4 pr-10 rounded-lg border-0 bg-white/90 focus:bg-white focus:outline-none focus:ring-2 focus:ring-noviyellow text-gray-800 font-montserrat"/><Search className="absolute right-3 top-2.5 text-noviblue" size={18} /></div>
+        <div className="relative w-full">
+            <input 
+                type="text" 
+                placeholder="Buscar muebles..." 
+                className="w-full py-2 pl-4 pr-10 rounded-lg border-0 bg-white/90 focus:bg-white focus:outline-none focus:ring-2 focus:ring-noviyellow text-gray-800 font-montserrat"
+                value={searchTerm}
+                onChange={handleSearchInput}
+                onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
+            />
+            <button 
+                onClick={executeSearch}
+                className="absolute right-3 top-2.5 text-noviblue"
+            >
+                <Search size={18} />
+            </button>
+        </div>
       </div>
       
       <main className="flex-1"><Outlet /></main>
 
-<footer className="bg-gray-900 text-white mt-auto pt-16 pb-8 border-t-4 border-noviyellow">
+      <footer className="bg-gray-900 text-white mt-auto pt-16 pb-8 border-t-4 border-noviyellow">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             
@@ -199,7 +224,6 @@ const Layout = () => {
                 >
                   Preguntas Frecuentes
                 </li>
-                {/* Envíos y Devoluciones ELIMINADO */}
                 <li 
                   className="hover:text-noviblue cursor-pointer transition-colors" 
                   onClick={() => navigate('/preguntas-frecuentes')}
