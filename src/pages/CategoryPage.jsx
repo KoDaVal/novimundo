@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
-import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban, ArrowUpDown } from 'lucide-react'; // Importé ArrowUpDown opcional
+// Agregamos 'ChevronDown' para la flecha personalizada del select
+import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban, ChevronDown } from 'lucide-react'; 
 
 const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const { slug } = useParams();
@@ -16,8 +17,8 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const [selectedSubcats, setSelectedSubcats] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   
-  // 1. ESTADO PARA EL ORDENAMIENTO
-  const [sortOrder, setSortOrder] = useState('default'); // 'default', 'asc', 'desc'
+  // Estado inicial 'default' (sin orden específico aún)
+  const [sortOrder, setSortOrder] = useState('default');
 
   const getPageTitle = () => {
       if (isSearch) return `Resultados para "${searchTerm}"`;
@@ -44,7 +45,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const dynamicSubcats = [...new Set(displayedProductsBase.map(p => p.subcategory).filter(Boolean))].sort();
   const dynamicBrands = [...new Set(displayedProductsBase.map(p => p.brand).filter(Boolean))].sort();
 
-  // Filtrado base (Precio rango, Categoría, Marca)
   const filteredProducts = displayedProductsBase.filter(prod => {
       if (prod.price < (priceRange.min || 0) || prod.price > (priceRange.max || 50000)) return false;
       if (selectedSubcats.length > 0 && !selectedSubcats.includes(prod.subcategory)) return false;
@@ -52,14 +52,14 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
       return true;
   });
 
-  // 2. LÓGICA DE ORDENAMIENTO (Se aplica SOBRE los productos ya filtrados)
+  // Lógica de ordenamiento (Solo precio)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
       if (sortOrder === 'asc') {
           return a.price - b.price; // Menor a Mayor
       } else if (sortOrder === 'desc') {
           return b.price - a.price; // Mayor a Menor
       }
-      return 0; // Orden por defecto (como vengan de la base de datos o API)
+      return 0; 
   });
 
   const toggleSubcat = (name) => setSelectedSubcats(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
@@ -83,7 +83,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                     <Filter size={20} className="text-noviblue" />
                     <h2 className="font-bold text-gray-800 text-lg">Filtros</h2>
                 </div>
-                {/* Filtro Precio Rango */}
                 <div className="mb-8">
                     <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Precio</h3>
                     <div className="flex items-center gap-2 mb-4">
@@ -92,7 +91,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                         <input type="number" value={priceRange.max} onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Max" />
                     </div>
                 </div>
-                {/* Filtro Subcategorías */}
                 {dynamicSubcats.length > 0 && (
                     <div className="mb-8">
                         <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Categoría</h3>
@@ -106,7 +104,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                         </div>
                     </div>
                 )}
-                {/* Filtro Marcas */}
                 {dynamicBrands.length > 0 && (
                     <div className="mb-6">
                         <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Marcas</h3>
@@ -125,35 +122,39 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
 
         {/* MAIN CONTENT */}
         <main className="flex-1">
-            {/* ENCABEZADO DE RESULTADOS Y ORDENAMIENTO */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h1 className="text-2xl font-extrabold text-gray-900 uppercase">{getPageTitle()}</h1>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                    {/* 3. INTERFAZ: SELECTOR DE ORDENAMIENTO */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 hidden sm:block">Ordenar por:</span>
+                    
+                    {/* --- SELECTOR DE ORDENAMIENTO ESTILIZADO --- */}
+                    <div className="relative group">
                         <select 
                             value={sortOrder} 
                             onChange={(e) => setSortOrder(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-noviblue cursor-pointer bg-white"
+                            className="appearance-none w-full sm:w-56 bg-white border border-gray-200 text-gray-700 text-sm font-semibold py-2.5 pl-4 pr-10 rounded-full shadow-sm cursor-pointer hover:border-noviblue focus:outline-none focus:ring-2 focus:ring-noviblue/20 transition-all"
                         >
-                            <option value="default">Relevancia</option>
+                            {/* Opción oculta que sirve de placeholder */}
+                            <option value="default" disabled hidden>Ordenar por precio</option> 
                             <option value="asc">Precio: Menor a Mayor</option>
                             <option value="desc">Precio: Mayor a Menor</option>
                         </select>
+                        
+                        {/* Icono de flecha posicionado absolutamente para reemplazar el del navegador */}
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 group-hover:text-noviblue transition-colors">
+                            <ChevronDown size={16} strokeWidth={2.5} />
+                        </div>
                     </div>
+                    {/* ------------------------------------------- */}
 
-                    <span className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                    <span className="text-sm text-gray-500 font-medium whitespace-nowrap hidden sm:inline-block">
                         {sortedProducts.length} Productos
                     </span>
                 </div>
             </div>
 
-            {/* PRODUCT GRID */}
             {sortedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* IMPORTANTE: Mapeamos sortedProducts en lugar de filteredProducts */}
                     {sortedProducts.map((product) => (
                         <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col cursor-pointer" onClick={() => navigate(`/producto/${product.id}`)}>
                              <div className="relative h-56 overflow-hidden p-4 bg-white">
@@ -165,25 +166,18 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                                 <h3 className="font-bold text-sm text-gray-800 mb-2 leading-tight line-clamp-2">{product.name}</h3>
                                 <div className="mt-auto flex items-center justify-between">
                                     <span className="text-lg font-extrabold text-gray-900">{product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: product.price % 1 === 0 ? 0 : 2 })}</span>
-                                    
                                     {product.inStock ? (
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }} 
                                             className="p-2 bg-gray-50 rounded-full text-noviblue hover:bg-noviblue hover:text-white transition-colors"
-                                            title="Agregar al carrito"
                                         >
                                             <ShoppingCart size={16} />
                                         </button>
                                     ) : (
-                                        <button 
-                                            disabled 
-                                            className="p-2 bg-gray-100 rounded-full text-gray-400 cursor-not-allowed"
-                                            title="Agotado"
-                                        >
+                                        <button disabled className="p-2 bg-gray-100 rounded-full text-gray-400 cursor-not-allowed">
                                             <Ban size={16} />
                                         </button>
                                     )}
-
                                 </div>
                              </div>
                         </div>
@@ -203,4 +197,3 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
 };
 
 export default CategoryPage;
-
