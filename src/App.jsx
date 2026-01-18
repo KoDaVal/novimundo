@@ -2,17 +2,18 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { ProductProvider } from './context/ProductContext';
-import OrderSuccess from './pages/OrderSuccess'; // ✅ Tu nueva página
+import OrderSuccess from './pages/OrderSuccess'; 
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
-import SuccessPage from './pages/SuccessPage'; // La antigua (puedes dejarla por si acaso)
+import SuccessPage from './pages/SuccessPage'; 
 import StoresPage from './pages/StoresPage';
 import AboutPage from './pages/AboutPage';
 import FaqPage from './pages/FaqPage';
 import TermsPage from './pages/TermsPage';
+import HelpPage from './pages/HelpPage';
 import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
@@ -33,14 +34,17 @@ const App = () => {
               <Route path="nosotros" element={<AboutPage />} />
               <Route path="preguntas-frecuentes" element={<FaqPage />} />
               <Route path="terminos-y-condiciones" element={<TermsPage />} />
-              <Route path="ayuda" element={<FaqPage />} />
-              {/* Ruta antigua (por si alguien entra por historial) */}
+              
+              {/* ✅ AHORA SÍ, SOLO UNA RUTA PARA AYUDA */}
+              <Route path="ayuda" element={<HelpPage />} />
+
+              {/* Ruta antigua */}
               <Route path="order-success" element={<SuccessPage />} />
 
-              {/* ✅ TU NUEVA RUTA (La que limpia el carrito) */}
+              {/* Nueva ruta de éxito */}
               <Route path="gracias" element={<OrderSuccess />} />
 
-              {/* ⚠️ El comodín siempre al final de la lista */}
+              {/* Comodín */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
@@ -51,5 +55,3 @@ const App = () => {
 };
 
 export default App;
-
-
