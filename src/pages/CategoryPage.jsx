@@ -1,8 +1,7 @@
-import React, { useState } from 'react'; // Eliminé useEffect si no se usa explícitamente
+import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
-// Agregamos 'Check' para marcar la opción seleccionada
 import { Filter, Check, ChevronRight, PackageOpen, ShoppingCart, Ban, ChevronDown } from 'lucide-react'; 
 
 const CategoryPage = ({ isSearch = false, isOffers = false }) => {
@@ -17,9 +16,9 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
   const [selectedSubcats, setSelectedSubcats] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   
-  // --- ESTADOS PARA EL ORDENAMIENTO ---
-  const [sortOrder, setSortOrder] = useState('default');
-  const [isSortOpen, setIsSortOpen] = useState(false); // Nuevo estado para abrir/cerrar menú
+  // 1. ESTADO INICIAL: 'asc' (Menor a Mayor por defecto)
+  const [sortOrder, setSortOrder] = useState('asc'); 
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   const getPageTitle = () => {
       if (isSearch) return `Resultados para "${searchTerm}"`;
@@ -53,23 +52,20 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
       return true;
   });
 
+  // 2. LÓGICA DE ORDENAMIENTO SIMPLIFICADA
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-      if (sortOrder === 'asc') {
-          return a.price - b.price; 
-      } else if (sortOrder === 'desc') {
-          return b.price - a.price; 
+      if (sortOrder === 'desc') {
+          return b.price - a.price; // Mayor a Menor
       }
-      return 0; 
+      return a.price - b.price; // Default: Menor a Mayor ('asc')
   });
 
   const toggleSubcat = (name) => setSelectedSubcats(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
   const toggleBrand = (name) => setSelectedBrands(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
 
-  // Helper para mostrar texto bonito en el botón
+  // Texto del botón
   const getSortLabel = () => {
-      if (sortOrder === 'asc') return 'Precio: Menor a Mayor';
-      if (sortOrder === 'desc') return 'Precio: Mayor a Menor';
-      return 'Ordenar por precio'; // Texto por defecto
+      return sortOrder === 'desc' ? 'Precio: Mayor a Menor' : 'Precio: Menor a Mayor';
   };
 
   if (loading) return <div className="p-20 text-center">Cargando productos...</div>;
@@ -83,7 +79,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
       </div>
       
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* ASIDE - FILTROS LATERALES */}
         <aside className="w-full lg:w-1/4 shrink-0">
             <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm sticky top-28">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
@@ -98,7 +93,6 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                         <input type="number" value={priceRange.max} onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})} className="w-full p-2 border rounded text-sm" placeholder="Max" />
                     </div>
                 </div>
-                {/* ... (Resto de filtros de Categoría y Marca igual que antes) ... */}
                 {dynamicSubcats.length > 0 && (
                     <div className="mb-8">
                         <h3 className="font-bold text-sm text-gray-700 mb-4 uppercase tracking-wide">Categoría</h3>
@@ -129,15 +123,15 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 relative"> {/* Agregué relative por si acaso */}
+        <main className="flex-1 relative">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 z-20 relative">
                 <h1 className="text-2xl font-extrabold text-gray-900 uppercase">{getPageTitle()}</h1>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                     
-                    {/* --- DROPDOWN PERSONALIZADO (NO HTML NATIVO) --- */}
+                    {/* --- DROPDOWN PERSONALIZADO --- */}
                     <div className="relative">
-                        {/* El Botón (Trigger) */}
+                        {/* Botón Trigger */}
                         <button 
                             onClick={() => setIsSortOpen(!isSortOpen)}
                             className={`flex items-center justify-between gap-3 w-full sm:w-60 px-4 py-2.5 bg-white border rounded-full text-sm font-semibold transition-all shadow-sm hover:border-noviblue hover:text-noviblue ${isSortOpen ? 'border-noviblue ring-2 ring-noviblue/20 text-noviblue' : 'border-gray-200 text-gray-700'}`}
@@ -146,24 +140,15 @@ const CategoryPage = ({ isSearch = false, isOffers = false }) => {
                             <ChevronDown size={16} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
                         </button>
 
-                        {/* Backdrop para cerrar al hacer click afuera */}
+                        {/* Backdrop */}
                         {isSortOpen && (
                             <div className="fixed inset-0 z-30" onClick={() => setIsSortOpen(false)}></div>
                         )}
 
-                        {/* El Menú Desplegable */}
+                        {/* Menú Desplegable: SOLO 2 OPCIONES */}
                         {isSortOpen && (
                             <div className="absolute right-0 mt-2 w-full sm:w-60 bg-white rounded-xl shadow-xl border border-gray-100 z-40 overflow-hidden animate-fade-in-down">
                                 <ul className="py-1">
-                                    <li>
-                                        <button 
-                                            onClick={() => { setSortOrder('default'); setIsSortOpen(false); }}
-                                            className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${sortOrder === 'default' ? 'text-noviblue font-bold bg-blue-50/50' : 'text-gray-600'}`}
-                                        >
-                                            Relevancia (Defecto)
-                                            {sortOrder === 'default' && <Check size={16} />}
-                                        </button>
-                                    </li>
                                     <li>
                                         <button 
                                             onClick={() => { setSortOrder('asc'); setIsSortOpen(false); }}
