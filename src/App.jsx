@@ -13,12 +13,14 @@ import StoresPage from './pages/StoresPage';
 import AboutPage from './pages/AboutPage';
 import FaqPage from './pages/FaqPage';
 import TermsPage from './pages/TermsPage';
+import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
   return (
     <ProductProvider>
       <CartProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
@@ -31,7 +33,7 @@ const App = () => {
               <Route path="nosotros" element={<AboutPage />} />
               <Route path="preguntas-frecuentes" element={<FaqPage />} />
               <Route path="terminos-y-condiciones" element={<TermsPage />} />
-              
+              <Route path="ayuda" element={<FaqPage />} />
               {/* Ruta antigua (por si alguien entra por historial) */}
               <Route path="order-success" element={<SuccessPage />} />
 
@@ -49,4 +51,5 @@ const App = () => {
 };
 
 export default App;
+
 
