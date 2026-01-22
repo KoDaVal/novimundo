@@ -59,7 +59,7 @@ const ProductPage = () => {
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
                     <span className="text-4xl font-extrabold text-gray-900">{product.price.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: product.price % 1 === 0 ? 0 : 2 })}</span>
                     <div className="flex items-center justify-between mt-2">
-                         <div className="flex items-center gap-2 text-sm text-noviblue font-bold"><CreditCard size={16} /> Hasta 12 MSI</div>
+                         <div className="flex items-center gap-2 text-sm text-noviblue font-bold"><CreditCard size={16} /> Hasta 12 Meses</div>
                          
                          {/* Indicador visual de disponibilidad */}
                          {product.inStock ? (
@@ -112,4 +112,5 @@ const ProductPage = () => {
   );
 };
 export default ProductPage;
+
 
